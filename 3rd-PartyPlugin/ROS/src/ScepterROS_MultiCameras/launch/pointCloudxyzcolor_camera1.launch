@@ -1,0 +1,12 @@
+<launch>
+  <arg name = "nodeName" default="cam1"/>   
+  <node pkg="nodelet" type="nodelet" name="nodelet_pointcloudxyzrgb_$(arg nodeName)" args="manager" />
+
+  <node pkg="nodelet" type="nodelet" name="pointcloudxyzrgb_$(arg nodeName)"
+        args="load depth_image_proc/point_cloud_xyzrgb nodelet_pointcloudxyzrgb_$(arg nodeName)">
+    <remap from="depth_registered/image_rect" to="/$(arg nodeName)/transformedDepth/image_raw"/>
+    <remap from="depth_registered/points" to="/$(arg nodeName)/transformedDepth/points"/>
+    <remap from="rgb/image_rect_color" to="/$(arg nodeName)/color/image_raw"/>
+    <remap from="rgb/camera_info" to="/$(arg nodeName)/color/camera_info"/>
+  </node>
+</launch>

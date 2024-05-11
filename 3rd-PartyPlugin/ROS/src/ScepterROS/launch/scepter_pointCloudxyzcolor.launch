@@ -1,0 +1,11 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="nodelet_pointcloudxyzrgb_manager" args="manager" />
+
+  <node pkg="nodelet" type="nodelet" name="pointcloudxyzrgb_manager"
+        args="load depth_image_proc/point_cloud_xyzrgb nodelet_pointcloudxyzrgb_manager">
+    <remap from="depth_registered/image_rect" to="/Scepter/transformedDepth/image_raw"/>
+    <remap from="depth_registered/points" to="/Scepter/transformedDepth/points"/>
+    <remap from="rgb/image_rect_color" to="/Scepter/color/image_raw"/>
+    <remap from="rgb/camera_info" to="/Scepter/color/camera_info"/>
+  </node>
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+    <!-- device_index used in  Ps2_GetDeviceInfo -->
+    <arg name="device_index" default="0"/>    
+
+    <node pkg="ScepterROS" type="scepter_camera" name="scepter_manager" output="screen" required="true">
+        <param name="device_index" value="$(arg device_index)" type="int"/>
+    </node>
+</launch>

@@ -1,0 +1,6 @@
+<launch>
+    <arg name = "nodeName" default="cam2"/>  
+    <arg name = "ip" default="192.168.1.102"/>  
+    <node name="$(arg nodeName)" pkg="ScepterROS_MultiCameras" type="scepter_multicameras" output="screen" required="true"
+        args="$(arg nodeName) $(arg ip)" />
+</launch>

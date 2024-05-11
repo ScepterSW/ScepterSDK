@@ -1,0 +1,8 @@
+{
+    "productName": "DS77Lite",
+    "connectType":"socket",
+    "toFSensor": [
+        {
+            "type": "sony_cw_2022"
+        }]
+}

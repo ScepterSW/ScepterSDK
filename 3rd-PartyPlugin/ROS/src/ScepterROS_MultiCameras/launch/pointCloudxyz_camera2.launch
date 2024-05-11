@@ -1,0 +1,11 @@
+<launch>
+  <arg name = "nodeName" default="cam2"/>   
+  <node pkg="nodelet" type="nodelet" name="nodelet_pointcloudxyz_$(arg nodeName)" args="manager" />
+
+  <node pkg="nodelet" type="nodelet" name="pointcloudxyz_$(arg nodeName)"
+        args="load depth_image_proc/point_cloud_xyz nodelet_pointcloudxyz_$(arg nodeName)">
+    <remap from="camera_info" to="/$(arg nodeName)/depth/camera_info"/>
+    <remap from="image_rect" to="/$(arg nodeName)/depth/image_raw"/>
+    <remap from="points" to="/$(arg nodeName)/depth/points"/>
+  </node>
+</launch>
