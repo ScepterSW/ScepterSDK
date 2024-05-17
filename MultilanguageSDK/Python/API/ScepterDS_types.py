@@ -76,8 +76,6 @@ class ScFrame(Structure):
                 ("pixelFormat", c_int32),
                 ("pFrameData", POINTER(c_uint8)),
                 ("dataLen", c_uint32),
-                ("exposureTime", c_float),
-                ("depthRange", c_uint8),
                 ("width", c_uint16),
                 ("height", c_uint16),
                 ("hardwaretimestamp", c_uint64)]

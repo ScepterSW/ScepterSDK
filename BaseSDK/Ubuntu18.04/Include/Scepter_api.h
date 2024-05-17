@@ -247,8 +247,9 @@ SCEPTER_C_API_EXPORT ScStatus scGetColorResolution(ScDeviceHandle device, int32_
 
 /**
  * @brief        Get a list of image resolutions supported by Sensor
+ * @param[in]    device       The handle of the device.
  * @param[in]    type         The sensor type
- * @param[out]    pList       List of supported resolutions
+ * @param[out]   pList        List of supported resolutions
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetSupportedResolutionList(ScDeviceHandle device, ScSensorType type, ScResolutionList* pList);
@@ -496,22 +497,6 @@ SCEPTER_C_API_EXPORT ScStatus scSetHotPlugStatusCallback(PtrHotPlugStatusCallbac
 SCEPTER_C_API_EXPORT ScStatus scRebootDevie(ScDeviceHandle device);
 
 /**
- * @brief        Enables or disables the HDR Mode of the ToF sensor with SC_EXPOSURE_CONTROL_MODE_MANUAL. Default enabled,
- *               so if you want switch to the SC_EXPOSURE_CONTROL_MODE_AUTO, set HDR Mode disable firstly.
- * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetHDRModeEnabled(ScDeviceHandle device, bool bEnabled);
-/**
- * @brief        Returns the Boolean value of whether the HDRMode of ToF sensor feature is enabled or disabled.
- * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetHDRModeEnabled(ScDeviceHandle device, bool* bEnabled);
-
-/**
  * @brief        Set the input signal parameters for Hardware Trigger.
  * @param[in]    device       The handle of the device
  * @param[in]    params       Pointer to a variable in which to store the parameters.
@@ -534,4 +519,80 @@ SCEPTER_C_API_EXPORT ScStatus scGetInputSignalParamsForHWTrigger(ScDeviceHandle 
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scSetParamsByJson(ScDeviceHandle device, char* pfilePath);
+
+/**
+ * @brief        Get the depth range in the current working mode of the device.
+ * @param[in]    device       The handle of the device.
+ * @param[out]   minValue     The min value of the depth
+ * @param[out]   maxValue     The ax value of the depth
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetDepthRangeValue(ScDeviceHandle device, int16_t* minValue, int16_t* maxValue);
+
+/**
+ * @brief        Set the parameters for time sync.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    params       Pointer to a variable in which to store the parameters.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetTimeSyncConfig(ScDeviceHandle device, ScTimeSyncConfig params);
+
+/**
+ * @brief        Get the parameters for time sync.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[out]   pParams      Pointer to a variable in which to store the returned value.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetTimeSyncConfig(ScDeviceHandle device, ScTimeSyncConfig* pParams);
+
+/**
+ * @brief        Enables or disables the HDR Mode of the ToF sensor with SC_EXPOSURE_CONTROL_MODE_MANUAL. Default enabled,
+ *               so if you want switch to the SC_EXPOSURE_CONTROL_MODE_AUTO, set HDR Mode disable firstly.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetHDRModeEnabled(ScDeviceHandle device, bool bEnabled);
+/**
+ * @brief        Returns the Boolean value of whether the HDRMode of ToF sensor feature is enabled or disabled.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetHDRModeEnabled(ScDeviceHandle device, bool* bEnabled);
+
+/**
+ * @brief        Get the count of distance level in HDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[out]   pCount           The distance level count.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetDistanceLevelCountOfHDRMode(ScDeviceHandle device, int32_t* pCount);
+
+/**
+ * @brief        Set the exposure time of depth sensor with the level in HDR mode.
+ * @param[in]    device          The handle of the device on which to set the exposure time  in microseconds.
+ * @param[in]    level            The distance level from 0 to the count (get by scGetDistanceLevelCountOfHDRMode).
+ * @param[in]    exposureTime    The exposure time. The value must be within the maximum exposure time of sensor.
+ * @return       ::SC_OK         If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t exposureTime);
+
+/**
+ * @brief        Get the exposure time of depth sensor with the level in HDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[in]    level            The distance level from 0 to the count (get by scGetDistanceLevelCountOfHDRMode).
+ * @param[out]   pExposureTime    The exposure time.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t* pExposureTime);
+
+/**
+ * @brief        Get the maximum exposure time of depth sensor with the level in HDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[in]    level            The distance level from 0 to the count (get by scGetDistanceLevelCountOfHDRMode).
+ * @param[out]   pMaxExposureTime The maximum exposure time. The maximum exposure time is different at different frame rates.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t* pMaxExposureTime);
 #endif /* SCEPTER_API_H */

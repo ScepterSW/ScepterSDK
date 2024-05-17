@@ -97,11 +97,9 @@ typedef struct
     ScPixelFormat pixelFormat;       //!< The pixel format used by a frame. See ::ScPixelFormat for more information.
     uint8_t*      pFrameData;        //!< A buffer containing the frame’s image data.
     uint32_t      dataLen;           //!< The length of pFrame, in bytes.
-    float         exposureTime;      //!< The exposure time, in milliseconds.
-    uint8_t       depthRange;        //!< The depth range mode of the current frame. Used only for depth frames.
     uint16_t      width;             //!< The width of the frame, in pixels.
     uint16_t      height;            //!< The height of the frame, in pixels.
-    uint64_t      deviceTimestamp;   //!< The timestamp when the frame be generated on the device. Frame processing and transfer time are not included.
+    uint64_t      deviceTimestamp;   //!< The timestamp(in milliseconds) when the frame be generated on the device. Frame processing and transfer time are not included.
 } ScFrame;
 
 typedef struct
@@ -161,6 +159,12 @@ typedef struct
     uint16_t delay;       //!< Range in [0,65535]. The delay time of output signal.
     uint8_t  polarity;    //!< Range in [0,1]. 0 for active low; 1 for active high.
 } ScOutputSignalParams;   //!< Output signal parameters.
+
+typedef struct
+{
+    uint8_t flag;     //!< 0: disable, 1: NTP, 2: PTP, only NTP needs the ip.
+    uint8_t ip[16];   //!< just for NTP.
+} ScTimeSyncConfig;
 
 #pragma pack(pop)
 
