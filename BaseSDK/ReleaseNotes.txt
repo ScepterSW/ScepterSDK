@@ -1,3 +1,10 @@
+Ver1.1.0
+- Optimize code for test with tcmalloc
+- Check protocol
+
+Ver1.0.9
+- Optimize code of upgrade FW 
+
 Ver1.0.8
 - Add scGetDistanceLevelCountOfHDRMode and scGetMaxExposureTimeOfHDR
 - Add scSetExposureTimeOfHDR and scGetExposureTimeOfHDR
