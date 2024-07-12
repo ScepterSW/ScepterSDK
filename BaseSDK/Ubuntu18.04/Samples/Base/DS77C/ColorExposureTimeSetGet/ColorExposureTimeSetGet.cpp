@@ -111,10 +111,10 @@ int main()
 	status = scGetMaxExposureTime(deviceHandle, SC_COLOR_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "scGetMaxExposureTime failed Status:" << status << endl;
+		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
-	cout << "Recommended Scope: 100 - " << maxExposureTime << endl;
+	cout << "Recommended scope: 100 - " << maxExposureTime << endl;
 
 	cout << "* step2. Set and Get new ExposureTime *" << endl;
 	//Set new ExposureTime
@@ -162,7 +162,7 @@ int main()
 		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
-	cout << "recommended scope: 100 - " << maxExposureTime << endl;
+	cout << "Recommended scope: 100 - " << maxExposureTime << endl;
 
 	cout << "* step2. Set and Get new Auto Max Color exposure time range *" << endl;
 	//set new range of Auto Color exposure time. [100  maxExposureTime.exposureTime]

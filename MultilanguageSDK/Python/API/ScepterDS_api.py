@@ -57,7 +57,13 @@ class ScepterTofCam():
         
     def __del__(self):
         self.sc_cam_lib.scShutdown()
-    
+
+    def scInitialize(self):
+        return self.sc_cam_lib.scInitialize()
+
+    def scShutdown(self):
+        return self.sc_cam_lib.scShutdown()
+
     def scGetSDKVersion(self): 
         tmp = c_char * 64
         version = tmp()
@@ -153,13 +159,18 @@ class ScepterTofCam():
         return self.sc_cam_lib.scSetColorPixelFormat(self.device_handle, pixelFormat)
 
     def scSetColorResolution(self, w = c_int32(1600), h = c_int32(1200)):
-        return self.sc_cam_lib.scSetColorResolution(self.device_handle, w, h) 
-     
+        return self.sc_cam_lib.scSetColorResolution(self.device_handle, w, h)
+
     def scGetColorResolution(self):
         w = c_int32(1600)
         h = c_int32(1200)
         return self.sc_cam_lib.scGetColorResolution(self.device_handle, byref(w), byref(h)), w, h
-        
+
+    def scGetSupportedResolutionList(self, type = ScSensorType.SC_TOF_SENSOR, cam_count=1):
+        tmp = ScResolutionList * cam_count
+        pList = tmp()
+        return self.sc_cam_lib.scGetSupportedResolutionList(self.device_handle, type, byref(pList)), pList
+
     def scSetFrameRate(self, value = c_uint8(30)):
         return self.sc_cam_lib.scSetFrameRate(self.device_handle, value) 
      
@@ -169,14 +180,25 @@ class ScepterTofCam():
 
     def scSetExposureControlMode(self, sensorType = ScSensorType.SC_TOF_SENSOR, mode = ScExposureControlMode.SC_EXPOSURE_CONTROL_MODE_MANUAL):
         return self.sc_cam_lib.scSetExposureControlMode(self.device_handle, sensorType.value, mode.value) 
-    
+
+    def scGetExposureControlMode(self, sensorType = ScSensorType.SC_TOF_SENSOR):
+        mode = ScExposureControlMode(1)
+        return self.sc_cam_lib.scGetExposureControlMode(self.device_handle, sensorType.value, byref(mode)), mode
+
     def scSetExposureTime(self, sensorType = ScSensorType.SC_TOF_SENSOR, params = c_int32(0)):
         return self.sc_cam_lib.scSetExposureTime(self.device_handle, sensorType.value, params)
      
     def scGetExposureTime(self, sensorType = ScSensorType.SC_TOF_SENSOR):
         params = c_int32(0)
         return self.sc_cam_lib.scGetExposureTime(self.device_handle, sensorType.value, byref(params)), params
- 
+
+    def scSetColorAECMaxExposureTime(self, params=c_int32(0)):
+        return self.sc_cam_lib.scSetColorAECMaxExposureTime(self.device_handle, params)
+
+    def scGetColorAECMaxExposureTime(self):
+        params = c_int32(0)
+        return self.sc_cam_lib.scGetColorAECMaxExposureTime(self.device_handle, byref(params)), params
+
     def scSetTimeFilterParams(self, params = ScTimeFilterParams()): 
         return self.sc_cam_lib.scSetTimeFilterParams(self.device_handle, params)
     
@@ -226,12 +248,21 @@ class ScepterTofCam():
         enabled = c_bool(True)
         return self.sc_cam_lib.scGetTransformDepthImgToColorSensorEnabled(self.device_handle,  byref(enabled)),enabled
 
+    def scTransformDepthPointToColorPoint(self, depthPoint = ScDepthVector3(), colorSize = ScVector2u16()):
+        pPointInColor = ScVector2u16()
+        return self.sc_cam_lib.scTransformDepthPointToColorPoint(self.device_handle, depthPoint, colorSize, byref(PointInColor)), pPointInColor
+
+    def scConvertDepthToPointCloud(self, pDepthVector = ScDepthVector3(), pointCount = c_int32(0), pSensorParam = ScSensorIntrinsicParameters()):
+        tmp = ScVector3f * pointCount
+        pWorldVector = tmp()
+        return self.sc_cam_lib.scConvertDepthToPointCloud(self.device_handle, byref(pDepthVector), byref(pWorldVector), byref(pSensorParam)),pWorldVector
+
     def scConvertDepthFrameToPointCloudVector(self, depthFrame = ScFrame()): 
         len = depthFrame.width*depthFrame.height
         tmp =ScVector3f*len
         pointlist = tmp()
         return self.sc_cam_lib.scConvertDepthFrameToPointCloudVector(self.device_handle, byref(depthFrame) ,pointlist),pointlist
- 
+
     def scSetHotPlugStatusCallback(self,callbackfunc= c_void_p): 
         callbackFunc_= ctypes.CFUNCTYPE(c_void_p,POINTER(ScDeviceInfo),c_int32)(callbackfunc)    
         gCallbackFuncList.append(callbackFunc_)
@@ -259,3 +290,57 @@ class ScepterTofCam():
     def scGetAutoExposureTime(self):
         params = c_int32(0)
         return self.sc_cam_lib.scGetColorAECMaxExposureTime(self.device_handle, byref(params)), params
+
+    def scSetInputSignalParamsForHWTrigger(self, params = ScInputSignalParamsForHWTrigger()):
+        return self.sc_cam_lib.scSetInputSignalParamsForHWTrigger(self.device_handle, params)
+
+    def scGetInputSignalParamsForHWTrigger(self):
+        params = ScInputSignalParamsForHWTrigger()
+        return self.sc_cam_lib.scGetInputSignalParamsForHWTrigger(self.device_handle, byref(params)), params
+
+    def scGetDepthRangeValue(self):
+        minValue = c_int16(0)
+        maxValue = c_int16(0)
+        return self.sc_cam_lib.scGetDepthRangeValue(self.device_handle, byref(minValue), byref(maxValue)), minValue, maxValue
+
+    def scSetTimeSyncConfig(self, params = ScTimeSyncConfig()):
+        return self.sc_cam_lib.scSetTimeSyncConfig(self.device_handle, params)
+
+    def scGetTimeSyncConfig(self):
+        pParams = ScTimeSyncConfig()
+        return self.sc_cam_lib.scGetTimeSyncConfig(self.device_handle, byref(pParams)),pParams
+
+    def scSetHDRModeEnabled(self, bEnabled =  c_bool(True)):
+        return self.sc_cam_lib.scSetHDRModeEnabled(self.device_handle, bEnabled)
+
+    def scGetHDRModeEnabled(self):
+        bEnabled = c_bool(True)
+        return self.sc_cam_lib.scGetHDRModeEnabled(self.device_handle, byref(bEnabled)), bEnabled.value
+
+    def scGetDistanceLevelCountOfHDRMode(self):
+        pCount = c_int32(0)
+        return self.sc_cam_lib.scGetDistanceLevelCountOfHDRMode(self.device_handle, byref(pCount)), pCount
+
+    def scSetExposureTimeOfHDR(self, level = c_uint8(0), exposureTime = c_int32(0)):
+        return self.sc_cam_lib.scSetExposureTimeOfHDR(self.device_handle, level, exposureTime)
+
+    def scGetExposureTimeOfHDR(self):
+        level = c_uint8(0)
+        exposureTime = c_int32(0)
+        return self.sc_cam_lib.scGetExposureTimeOfHDR(self.device_handle, byref(level), byref(exposureTime)), level, exposureTime
+
+    def scGetMaxExposureTimeOfHDR(self):
+        level = c_uint8(0)
+        pMaxExposureTime = c_int32(0)
+        return self.sc_cam_lib.scGetMaxExposureTimeOfHDR(self.device_handle, byref(level), byref(pMaxExposureTime)), level, pMaxExposureTime
+
+    def scExportParamInitFile(self, pfilePath):
+        path = (c_char * 1000)(*bytes(pfilePath, 'utf-8'))
+        return self.sc_cam_lib.scExportParamInitFile(self.device_handle, byref(path))
+
+    def scImportParamInitFile(self, pfilePath):
+        path = (c_char * 1000)(*bytes(pfilePath, 'utf-8'))
+        return self.sc_cam_lib.scImportParamInitFile(self.device_handle, byref(path))
+
+    def scRestoreParamInitFile(self, pfilePath):
+        return self.sc_cam_lib.scRestoreParamInitFile(self.device_handle)

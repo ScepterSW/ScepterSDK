@@ -71,6 +71,13 @@ int main()
 
     cout << "open device successful,status :" << status << endl;
 
+	//Starts capturing the image stream
+	status = scStartStream(deviceHandle);
+	if (status != ScStatus::SC_OK)
+	{
+		cout << "scStartStream failed status:" <<status<< endl;
+		return -1;
+	}
 	//Get default frame rate
 	int rate = 10;
 	status = scGetFrameRate(deviceHandle, &rate);
@@ -79,7 +86,7 @@ int main()
 		cout << "scGetFrameRate failed status:" << status << endl;
 		return -1;
 	}
-	// if need change the framerate, do first
+	// if need change the framerate, do first 
 	/*
 	rate = 5;
 	scSetFrameRate(deviceHandle, rate);
@@ -97,16 +104,17 @@ int main()
 		cout << "scSetExposureControlMode  ok" << endl;
 	}
 
+	
 	cout << "* step1. Get Color exposure time range with frameRate " << rate <<"*" << endl;
- 	//Get the range of the Color exposure time
+ 	//Get the range of the Color exposure time 
 	int maxExposureTime = 0;
 	status = scGetMaxExposureTime(deviceHandle, SC_COLOR_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "scGetMaxExposureTime failed Status:" << status << endl;
+		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
-	cout << "Recommended Scope: 100 - " << maxExposureTime << endl;
+	cout << "Recommended scope: 100 - " << maxExposureTime << endl;
 
 	cout << "* step2. Set and Get new ExposureTime *" << endl;
 	//Set new ExposureTime
@@ -132,7 +140,7 @@ int main()
 	{
 		cout << "GetExposureTime:"<< exposureTime << endl;
 	}
-
+	
 	cout << "* Set and Get ColorGain *" << endl;
 	//set new ColorGain
 	float colorGain = 3.5;
@@ -157,8 +165,8 @@ int main()
 	{
 		cout << "GetColorGain:" << colorGain << endl;
 	}
-
-	cout << endl << "---- To SC_EXPOSURE_CONTROL_MODE_AUTO ----" << endl;
+		
+	cout << endl << "---- To SC_EXPOSURE_CONTROL_MODE_AUTO ----" << endl;	
 	//switch exposure mode to auto
 	status = scSetExposureControlMode(deviceHandle, SC_COLOR_SENSOR, SC_EXPOSURE_CONTROL_MODE_AUTO);
 	if (status != ScStatus::SC_OK)
@@ -170,20 +178,20 @@ int main()
 	{
 		cout << "scSetExposureControlMode ok" << endl;
 	}
-
+	
 	cout << "* step1. Get Color exposure time range *" << endl;
-	//Get the range of the Auto Color exposure time
+	//Get the range of the Auto Color exposure time 
 	status = scGetMaxExposureTime(deviceHandle, SC_COLOR_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
-	cout << "recommended scope: 100 - " << maxExposureTime << endl;
+	cout << "Recommended scope: 100 - " << maxExposureTime << endl;
 
 	cout << "* step2. Set and Get new Auto Max Color exposure time range *" << endl;
-	//set new range of Auto Color exposure time. [100  maxExposureTime.exposureTime]
-	int AECMaxExposureTime = 10000;
+	//set new range of Auto Color exposure time. [100  maxExposureTime]
+	int AECMaxExposureTime = 3000;
 	status = scSetColorAECMaxExposureTime(deviceHandle, AECMaxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
@@ -207,13 +215,6 @@ int main()
 		cout << "scGetColorAECMaxExposureTime:" << AECMaxExposureTime << endl;
 	}
 
-	//Starts capturing the image stream
-	status = scStartStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scStartStream failed status:" << status << endl;
-		return -1;
-	}
 
 	//Stop capturing the image stream
 	status = scStopStream(deviceHandle);

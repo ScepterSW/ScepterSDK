@@ -51,8 +51,7 @@ typedef enum
 typedef enum
 {
     SC_OK                           = 0,      //!< The function completed successfully.
-    SC_NO_DEVICE_CONNECTED          = -1,     //!< There is no depth camera connected or the camera has not been connected correctly.
-                                              //!< Check the hardware connection or try unplugging and re-plugging the USB cable.
+    SC_DEVICE_IS_LIMBO              = -1,     //!< The device is limbo
     SC_INVALID_DEVICE_INDEX         = -2,     //!< The input device index is invalid.
     SC_DEVICE_POINTER_IS_NULL       = -3,     //!< The device structure pointer is null.
     SC_INVALID_FRAME_TYPE           = -4,     //!< The input frame type is invalid.

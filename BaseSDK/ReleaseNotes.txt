@@ -1,3 +1,18 @@
+Ver1.1.4
+- Optimizate API name
+
+Ver1.1.3
+- Optimizate code for test
+- Fix some bugs
+
+Ver1.1.2
+- Get deviceMAC for socket
+- Optimizate scSetTimeSyncConfig for NTP
+
+Ver1.1.1
+- Add API scExportJsonConfig/scImportJsonConfig/scClearJsonConfig for json config
+- Support single data type
+
 Ver1.1.0
 - Optimize code for test with tcmalloc
 - Check protocol

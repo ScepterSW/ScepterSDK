@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed status:" <<status << endl;
+		cout << "ScGetDeviceCount failed! make sure pointer valid or called scInitialize()"<< endl;
 		system("pause");
 		return -1;
 	}

@@ -68,7 +68,7 @@ int main()
 		cout << "OpenDevice failed status:" <<status << endl;
 		return -1;
 	}
-	
+
 	//cameraParameters
 	ScSensorIntrinsicParameters cameraParameters;
 	status = scGetSensorIntrinsicParameters(deviceHandle, SC_TOF_SENSOR, &cameraParameters);

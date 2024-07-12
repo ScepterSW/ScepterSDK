@@ -70,6 +70,14 @@ int main()
 
     cout << "Open device successful,status :" << status << endl;
 
+	//Starts capturing the image stream
+	status = scStartStream(deviceHandle);
+	if (status != ScStatus::SC_OK)
+	{
+		cout << "scStartStream failed status:" <<status<< endl;
+		return -1;
+	}
+
 	//1.Default FrameRate
 	//2.Set new ExposureTime
 	//3.Change FrameRate to 5 (The exposure time ranges are different at different frame rates)
@@ -89,7 +97,7 @@ int main()
 	}
 
 	//Get default frame rate
-	int defaultframeRate = 10;
+	int defaultframeRate = 10; 
 	status = scGetFrameRate(deviceHandle, &defaultframeRate);
 	if (status != ScStatus::SC_OK)
 	{
@@ -98,7 +106,7 @@ int main()
 	}
 	cout << "Get default frame rate: " << defaultframeRate  << endl;
 
-	//Get the range of the ToF exposure time
+	//Get the range of the ToF exposure time 
 	int maxExposureTime = 0;
 	status = scGetMaxExposureTime(deviceHandle, SC_TOF_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
@@ -136,12 +144,12 @@ int main()
 	status = scGetMaxExposureTime(deviceHandle, SC_TOF_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetMaxExposureTime failed STATUS:" << status << endl;
+		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
 	cout << "recommended scope: 58 - " << maxExposureTime << endl;
 
-	//Set new ExposureTime 500
+	//Set new ExposureTime 500	
 	exposureTime = 500;
  	status = scSetExposureTime(deviceHandle, SC_TOF_SENSOR, exposureTime);
 	if (status != ScStatus::SC_OK)
@@ -152,14 +160,6 @@ int main()
 	else
 	{
 		cout << "Set exposure time " << exposureTime << " is OK." << endl;
-	}
-
-	//Starts capturing the image stream
-	status = scStartStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scStartStream failed status:" << status << endl;
-		return -1;
 	}
 
 	//Stop capturing the image stream

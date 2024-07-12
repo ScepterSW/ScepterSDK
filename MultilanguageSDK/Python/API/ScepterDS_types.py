@@ -1,19 +1,6 @@
 import os, platform, numpy
 from ctypes import *
 from enum import Enum
- 
-
-class ScRGB888Pixel(Structure):
-    _pack_ = 1
-    _fields_ = [("r", c_uint8),
-                ("g", c_uint8),
-                ("b", c_uint8)]
-
-class ScBGR888Pixel(Structure):
-    _pack_ = 1
-    _fields_ = [("b", c_uint8),
-                ("g", c_uint8),
-                ("r", c_uint8)]
 
 class ScVector3f(Structure):
     _pack_ = 1
@@ -60,14 +47,7 @@ class ScSensorIntrinsicParameters(Structure):
 class ScSensorExtrinsicParameters(Structure):
     _pack_ = 1
     _fields_ = [("rotation", c_double * 9),
-                ("translation", c_double * 3)]  
-
-class ScTimeStamp(Structure):
-    _pack_ = 1       
-    _fields_ = [("tm_sec", c_uint16),
-                ("tm_min", c_uint16),
-                ("tm_hour", c_uint16),
-                ("tm_msec", c_uint16)]     
+                ("translation", c_double * 3)]
 
 class ScFrame(Structure):
     _pack_ = 1
@@ -116,4 +96,19 @@ class ScIRGMMCorrectionParams(Structure):
     _fields_ = [("threshold", c_int32),
                 ("enable", c_bool)]
 
+class ScInputSignalParamsForHWTrigger(Structure):
+    _pack_ = 1
+    _fields_ = [("width", c_uint16),
+                ("interval", c_uint16),
+                ("polarity", c_uint8)]
 
+class ScOutputSignalParams(Structure):
+    _pack_ = 1
+    _fields_ = [("width", c_uint16),
+                ("delay", c_uint16),
+                ("polarity", c_uint8)]
+
+class ScTimeSyncConfig(Structure):
+    _pack_ = 1
+    _fields_ = [("flag", c_uint8),
+                ("ip", c_uint8 * 16)]

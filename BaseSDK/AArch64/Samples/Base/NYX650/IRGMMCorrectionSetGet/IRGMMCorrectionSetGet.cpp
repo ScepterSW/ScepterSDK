@@ -68,7 +68,7 @@ int main()
 		return false;
 	}
 
-    	cout << "open device successful,status :" << status << endl;
+    cout << "open device successful,status :" << status << endl;
 
 	//The parameters of IRGMMCorrection are stored in camera
 
@@ -92,11 +92,12 @@ int main()
 	}
 	cout << "Set IRGMMCorrection switch to " << boolalpha << IRGMMCorrectionParams.enable <<" is Ok."<< endl;
 
+
 	//Starts capturing the image stream
 	status = scStartStream(deviceHandle);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "scStartStream failed status:" <<status<< endl;
+		cout << "scStartStream failed status:" << status << endl;
 		return -1;
 	}
 

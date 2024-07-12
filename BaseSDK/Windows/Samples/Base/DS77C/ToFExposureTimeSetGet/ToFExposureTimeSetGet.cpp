@@ -111,10 +111,10 @@ int main()
 	status = scGetMaxExposureTime(deviceHandle, SC_TOF_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "scGetMaxExposureTime failed Status:" << status << endl;
+		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
-	cout <<"Recommended Scope: 58 - " << maxExposureTime << endl;
+	cout <<"Recommended scope: 58 - " << maxExposureTime << endl;
 
 	//Set new ExposureTime
 	int exposureTime = 400;
@@ -144,7 +144,7 @@ int main()
 	status = scGetMaxExposureTime(deviceHandle, SC_TOF_SENSOR, &maxExposureTime);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetMaxExposureTime failed STATUS:" << status << endl;
+		cout << "scGetMaxExposureTime failed status:" << status << endl;
 		return -1;
 	}
 	cout << "recommended scope: 58 - " << maxExposureTime << endl;

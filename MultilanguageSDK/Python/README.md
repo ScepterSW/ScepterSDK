@@ -10,8 +10,6 @@ PythonSDK version: V1.0.8
 
 - NYX Camera
   - NYX650 (NYX650_R_20240325_B02 and later )
-- VENO Camera
-  - VENO86 (VENO86_R_20240508_B01 and later )
 - Vzense Camera
   - DS86 (DS86_R_20230321 and later )
   - DS77C (DS77_S_20220530_B16 and later )
@@ -25,7 +23,6 @@ PythonSDK version: V1.0.8
 ### Directory
 
 - **NYX650**: the API and Sample code for NYX650 & NYX660
-- **VENO86**: the API and Sample code for VENO86 & VENO87
 - **DS77**: the API and Sample code for DS77Lite/DS77Pro
 - **DS77C**: the API and Sample code for DS77CLite/DS77CPro
 - **DS86**: the API and Sample code for DS86 & DS87

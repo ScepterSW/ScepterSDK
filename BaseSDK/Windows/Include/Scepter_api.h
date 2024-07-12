@@ -124,7 +124,7 @@ SCEPTER_C_API_EXPORT ScStatus scSetWorkMode(ScDeviceHandle device, ScWorkMode mo
 /**
  * @brief        Get the working mode of the camera.
  * @param[in]    device      The handle of the device.
- * @param[in]    pMode       The work mode of camera.
+ * @param[out]   pMode       The work mode of camera.
  * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetWorkMode(ScDeviceHandle device, ScWorkMode* pMode);
@@ -156,7 +156,7 @@ SCEPTER_C_API_EXPORT ScStatus scGetSensorExtrinsicParameters(ScDeviceHandle devi
 /**
  * @brief        Get the firmware version number.
  * @param[in]    device              The handle of the device on which to set the pulse count.
- * @param[in]    pFirmwareVersion    Pointer to a variable in which to store the returned fw value.
+ * @param[out]   pFirmwareVersion    Pointer to a variable in which to store the returned fw value.
  * @param[in]    length              The maximum length is 64 bytes.
  * @return       ::SC_OK             If the function succeeded, or one of the error values defined by ::ScStatus.
  */
@@ -264,7 +264,7 @@ SCEPTER_C_API_EXPORT ScStatus scSetFrameRate(ScDeviceHandle device, int32_t valu
 /**
  * @brief        Get the ToF frame rate.
  * @param[in]    device       The handle of the device on which to get the framerate.
- * @param[in]    pValue       The rate value.
+ * @param[out]   pValue       The rate value.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetFrameRate(ScDeviceHandle device, int32_t* pValue);
@@ -349,7 +349,7 @@ SCEPTER_C_API_EXPORT ScStatus scGetTimeFilterParams(ScDeviceHandle device, ScTim
 /**
  * @brief        Set the parameters of the Confidence filter.
  * @param[in]    device       The handle of the device
- * @param[out]   params       Pointer to a variable in which to store the parameters.
+ * @param[in]    params       Pointer to a variable in which to store the parameters.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scSetConfidenceFilterParams(ScDeviceHandle device, ScConfidenceFilterParams params);
@@ -365,7 +365,7 @@ SCEPTER_C_API_EXPORT ScStatus scGetConfidenceFilterParams(ScDeviceHandle device,
 /**
  * @brief        Set the parameters of the FlyingPixel filter.
  * @param[in]    device       The handle of the device.
- * @param[out]   params       Pointer to a variable in which to store the parameters.
+ * @param[in]    params       Pointer to a variable in which to store the parameters.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scSetFlyingPixelFilterParams(ScDeviceHandle device, const ScFlyingPixelFilterParams params);
@@ -556,7 +556,7 @@ SCEPTER_C_API_EXPORT ScStatus scSetHDRModeEnabled(ScDeviceHandle device, bool bE
 /**
  * @brief        Returns the Boolean value of whether the HDRMode of ToF sensor feature is enabled or disabled.
  * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @param[out]   bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetHDRModeEnabled(ScDeviceHandle device, bool* bEnabled);
@@ -595,4 +595,28 @@ SCEPTER_C_API_EXPORT ScStatus scGetExposureTimeOfHDR(ScDeviceHandle device, uint
  * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t* pMaxExposureTime);
+
+/**
+ * @brief        Export the parameter initialization file.
+ * @param[in]    device       The handle of the device.
+ * @param[in]    pfilePath    Pointer to the path of parameter initialization file.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scExportParamInitFile(ScDeviceHandle device, char* pfilePath);
+
+/**
+ * @brief        Import the parameter initialization file.
+ * @param[in]    device       The handle of the device.
+ * @param[in]    pfilePath    Pointer to the path of parameter initialization file.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scImportParamInitFile(ScDeviceHandle device, char* pfilePath);
+
+/**
+ * @brief        Restore the parameter initialization file.
+ * @param[in]    device       The handle of the device.
+ * @param[in]    pfilePath    Pointer to the path of parameter initialization file.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scRestoreParamInitFile(ScDeviceHandle device);
 #endif /* SCEPTER_API_H */
