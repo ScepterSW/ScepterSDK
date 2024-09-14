@@ -38,7 +38,7 @@ else:
 
 ret = camera.scOpenDeviceBySN(device_info.serialNumber)
 if  ret == 0:
-    print("open device successful")
+    print("scOpenDeviceBySN")
 else:
     print('scOpenDeviceBySN failed: ' + str(ret))   
  
@@ -48,12 +48,12 @@ ret, fw = camera.scGetFirmwareVersion()
 if  ret == 0:
     print("scGetFirmwareVersion :",str(fw))
 else:
-    print("scGetFirmwareVersion failed:",ret)
+    print("scGetFirmwareVersion failed status:",ret)
 
  
 ret = camera.scCloseDevice()
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret))   
            

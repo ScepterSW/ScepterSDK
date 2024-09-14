@@ -2,7 +2,11 @@
 #include <thread>
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "tf2/LinearMath/Quaternion.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#ifdef JAZZY
+  #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#else
+  #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#endif
 #include <tf2_ros/static_transform_broadcaster.h>
 
 using namespace std::chrono_literals;
@@ -52,7 +56,7 @@ bool ScepterManager::initDCAM(int32_t device_index)
     status =scInitialize();
     if (status != ScStatus::SC_OK)
     {
-        RCLCPP_INFO(this->get_logger(),"ScInitialize failed! %d" ,status);
+        RCLCPP_INFO(this->get_logger(),"scInitialize failed! %d" ,status);
         return false;
     }
    // Get number of available devices
@@ -62,7 +66,7 @@ GET:
     status = scGetDeviceCount(&device_count, 3000);
     if (status != ScStatus::SC_OK)
     {
-        RCLCPP_INFO(this->get_logger(), "ScGetDeviceCount failed! %d" ,status);
+        RCLCPP_INFO(this->get_logger(), "scGetDeviceCount failed! %d" ,status);
         return false;
     }
     RCLCPP_INFO(this->get_logger(), "Get device count: %d" ,device_count); 

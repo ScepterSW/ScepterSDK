@@ -41,7 +41,7 @@ if  ret != 0:
     print('scOpenDeviceBySN failed: ' + str(ret))
     exit()
 	
-print("open device successful,status :"+ str(ret))
+print("scOpenDeviceBySN,status :"+ str(ret))
 
 ret = camera.scStartStream()
 if  ret != 0:
@@ -51,7 +51,7 @@ if  ret != 0:
 while 1:
     ret, frameready = camera.scGetFrameReady(c_uint16(1200))
     if  ret !=0:
-        print("scGetFrameReady failed:",ret)
+        print("scGetFrameReady failed status:",ret)
         continue       
     
     if  frameready.depth:      
@@ -82,7 +82,7 @@ else:
 
 ret = camera.scCloseDevice()     
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret)) 
            

@@ -42,7 +42,7 @@ if  ret != 0:
     print('scOpenDeviceBySN failed: ' + str(ret))
     exit()
 	
-print("open device successful,status :"+ str(ret))
+print("scOpenDeviceBySN,status :"+ str(ret))
 
 ret = camera.scStartStream()
 if  ret != 0:
@@ -53,21 +53,21 @@ if  ret != 0:
 ret = camera.scSetColorResolution(640, 480)
 time.sleep(2)
 if  ret != 0:  
-    print("scSetColorResolution failed:",ret)
+    print("scSetColorResolution failed status:",ret)
 else:
     print("set to 640_480") 
 
 for i in range(frameSpace):
     ret, frameready = camera.scGetFrameReady(c_uint16(1200))
     if  ret !=0:
-        print("scGetFrameReady failed:",ret)
+        print("scGetFrameReady failed status:",ret)
         continue       
     
     if  frameready.color:      
         ret,frame = camera.scGetFrame(ScFrameType.SC_COLOR_FRAMEE)
         if  ret == 0:
             if frame.width == 640 and frame.height == 480:
-                print( "get Frame successful,status:" , ret, " resolution: ", frame.width  ,"x",frame.height)
+                print( "scGetFrame status:" , ret, " resolution: ", frame.width  ,"x",frame.height)
             else:
                 print("color width ",frame.width,"  height ",frame.height)      
         else:   
@@ -76,21 +76,21 @@ for i in range(frameSpace):
 ret = camera.scSetColorResolution(1600, 1200)
 time.sleep(2)
 if  ret != 0:  
-    print("scSetColorResolution failed:",ret)
+    print("scSetColorResolution failed status:",ret)
 else:
     print("set to 1600_1200") 
 
 for i in range(frameSpace):
     ret, frameready = camera.scGetFrameReady(c_uint16(1200))
     if  ret !=0:
-        print("scGetFrameReady failed:",ret)
+        print("scGetFrameReady failed status:",ret)
         continue       
     
     if  frameready.color:      
         ret,frame = camera.scGetFrame(ScFrameType.SC_COLOR_FRAMEE)
         if  ret == 0:
             if frame.width == 1600 and frame.height == 1200:
-                print( "get Frame successful,status:" , ret, " resolution: ", frame.width  ,"x",frame.height)
+                print( "scGetFrame status:" , ret, " resolution: ", frame.width  ,"x",frame.height)
             else:
                 print("color width ",frame.width,"  height ",frame.height)      
         else:   
@@ -105,7 +105,7 @@ else:
 
 ret = camera.scCloseDevice()     
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret)) 
            

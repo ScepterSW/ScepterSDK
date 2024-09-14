@@ -22,7 +22,7 @@ namespace DeviceConnectByIP
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }

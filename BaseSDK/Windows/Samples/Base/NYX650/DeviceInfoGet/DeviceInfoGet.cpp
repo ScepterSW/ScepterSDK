@@ -20,7 +20,7 @@ int main()
 	status = scInitialize();
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScInitialize failed status:" <<status << endl;
+		cout << "scInitialize failed status:" <<status << endl;
 		system("pause");
 		return -1;
 	}
@@ -31,7 +31,7 @@ int main()
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
+		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
 		system("pause");
 		return -1;
 	}

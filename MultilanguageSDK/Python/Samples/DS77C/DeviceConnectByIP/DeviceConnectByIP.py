@@ -38,13 +38,13 @@ else:
 
 ret = camera.scOpenDeviceByIP(device_info.ip)
 if  ret == 0:
-    print("open device successful")
+    print("scOpenDeviceByIP successful")
 else:
     print('scOpenDeviceByIP failed: ' + str(ret))   
  
 ret = camera.scCloseDevice()  
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret))   
            

@@ -38,7 +38,7 @@ else:
 
 ret = camera.scOpenDeviceBySN(device_info.serialNumber)
 if  ret == 0:
-    print("open device successful")
+    print("scOpenDeviceBySN")
 else:
     print('scOpenDeviceBySN failed: ' + str(ret))   
      
@@ -51,7 +51,7 @@ else:
  
 ret = camera.scCloseDevice()  
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret))   
            

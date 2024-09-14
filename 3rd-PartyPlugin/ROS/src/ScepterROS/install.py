@@ -32,13 +32,13 @@ def pullSDK(system_config):
         print("pull SDK success")
 
     elif system_config == 'Ubuntu20.04' or system_config == 'Ubuntu18.04':
-        src = libpath + "/%s/Include" %('Ubuntu18.04')
+        src = libpath + "/%s/Include" %('Ubuntu')
         dst = curPath + "/dependencies/Include"
         if os.path.exists(dst):
             shutil.rmtree(dst)
         shutil.copytree(src, dst) 
 
-        src = libpath + "/%s/Lib" %('Ubuntu18.04')
+        src = libpath + "/%s/Lib" %('Ubuntu')
         dst = curPath + "/dependencies/Lib"
         if os.path.exists(dst):
             shutil.rmtree(dst)

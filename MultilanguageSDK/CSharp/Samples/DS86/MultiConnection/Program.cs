@@ -24,7 +24,7 @@ namespace MultiConnection
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -37,7 +37,7 @@ namespace MultiConnection
                 status = VNAPI.VN_GetDeviceCount(ref deviceCount, 3000);
                 if (status != ScStatus.SC_OK)
                 {
-                    Console.WriteLine("ScGetDeviceCount failed! make sure the NYX is connected");
+                    Console.WriteLine("scGetDeviceCount failed! make sure the NYX is connected");
                     Console.ReadKey(true);
                     return;
                 }

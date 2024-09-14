@@ -23,7 +23,7 @@ int main()
 	status = scInitialize();
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScInitialize failed status:" <<status << endl;
+		cout << "scInitialize failed status:" <<status << endl;
 		system("pause");
 		return -1;
 	}
@@ -34,7 +34,7 @@ int main()
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
+		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
 		system("pause");
 		return -1;
 	}
@@ -74,7 +74,7 @@ int main()
 		return false;
 	}
 
-    cout << "open device successful,status :" << status << endl;
+    cout << "scOpenDeviceBySN status :" << status << endl;
 
 	//switch ColorResolution
 	int resolution_w = 640;
@@ -117,7 +117,7 @@ int main()
 			if (status == ScStatus::SC_OK && ColorFrame.pFrameData != NULL
 			&& ColorFrame.width==640 )
 			{
-				cout << "get Frame successful,status:" << status << "  "
+				cout << "scGetFrame status:" << status << "  "
 					 << "resolution: "<< ColorFrame.width  <<"x"<<ColorFrame.height<< endl;	
 			}
 		}
@@ -157,7 +157,7 @@ int main()
 						&& ColorFrame.width==1600 )
 
 			{
-				cout << "get Frame successful,status:" << status << "  "
+				cout << "scGetFrame status:" << status << "  "
 					<< "resolution: "<< ColorFrame.width  <<"x"<<ColorFrame.height<< endl;	
 			}
 		}

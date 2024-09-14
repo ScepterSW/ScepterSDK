@@ -42,7 +42,7 @@ if  ret != 0:
     print('scOpenDeviceBySN failed: ' + str(ret))
     exit()
 	
-print("open device successful,status :"+ str(ret))
+print("scOpenDeviceBySN,status :"+ str(ret))
 
 ret = camera.scStartStream()
 if  ret != 0:
@@ -56,19 +56,19 @@ ret = camera.scSetTransformColorImgToDepthSensorEnabled(c_bool(True))
 if  ret == 0:
     print("scSetTransformColorImgToDepthSensorEnabled ok")
 else:
-    print("scSetTransformColorImgToDepthSensorEnabled failed:",ret)     
+    print("scSetTransformColorImgToDepthSensorEnabled failed status:",ret)     
  
 for i in range(frameSpace):
     ret, frameready = camera.scGetFrameReady(c_uint16(1200))
     if  ret !=0:
-        print("scGetFrameReady failed:",ret)
+        print("scGetFrameReady failed status:",ret)
         continue       
     
     if  frameready.transformedColor:      
         ret,frame = camera.scGetFrame(ScFrameType.SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME)
         if  ret == 0:
-            print("get Frame successful,status:" , ret , "  "
-					,"frameTpye:" , frame.frameType , "  "
+            print("scGetFrame status:" , ret , "  "
+					,"frameType:" , frame.frameType , "  "
 					,"frameIndex:" , frame.frameIndex )
         else:   
             print("transformedColor  error:",ret)  
@@ -81,7 +81,7 @@ else:
 
 ret = camera.scCloseDevice()     
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret)) 
            

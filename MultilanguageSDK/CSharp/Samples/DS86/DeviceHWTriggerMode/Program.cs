@@ -29,7 +29,7 @@ namespace DeviceHWTriggerMode
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -80,7 +80,7 @@ namespace DeviceHWTriggerMode
                 return;
             }
 
-            Console.WriteLine("open device successful,status :" + status);
+            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
             //set slave true
             status = VNAPI.VN_SetWorkMode(deviceHandle, ScWorkMode.SC_HARDWARE_TRIGGER_MODE);
@@ -121,8 +121,8 @@ namespace DeviceHWTriggerMode
                     status = VNAPI.VN_GetFrame(deviceHandle, ScFrameType.SC_DEPTH_FRAME, ref depthFrame);
                     if (depthFrame.pFrameData != IntPtr.Zero)
                     {
-                        Console.WriteLine("get Frame successful,status:" + status + "  "
-                        + "frameTpye:" + depthFrame.frameType + "  "
+                        Console.WriteLine("VN_GetFrame,status:" + status + "  "
+                        + "frameType:" + depthFrame.frameType + "  "
                         + "frameIndex:" + depthFrame.frameIndex);
                     }
                 }

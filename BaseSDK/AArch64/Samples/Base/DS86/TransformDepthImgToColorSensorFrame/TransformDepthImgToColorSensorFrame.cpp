@@ -24,7 +24,7 @@ int main()
 	status = scInitialize();
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScInitialize failed status:" <<status << endl;
+		cout << "scInitialize failed status:" <<status << endl;
 		system("pause");
 		return -1;
 	}
@@ -35,7 +35,7 @@ int main()
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
+		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
 		system("pause");
 		return -1;
 	}
@@ -75,7 +75,7 @@ int main()
 		return false;
 	}
 
-    cout << "open device successful,status :" << status << endl;
+    cout << "scOpenDeviceBySN status :" << status << endl;
 
 	//Starts capturing the image stream
 	status = scStartStream(deviceHandle);
@@ -111,8 +111,8 @@ int main()
 			status = scGetFrame(deviceHandle, SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, &frame);
 			if (status == ScStatus::SC_OK&&frame.pFrameData != NULL)
 			{
-				cout << "get Frame successful,status:" << status << "  "
-					<< "frameTpye:" << frame.frameType << "  "
+				cout << "scGetFrame status:" << status << "  "
+					<< "frameType:" << frame.frameType << "  "
 					<< "frameIndex:" << frame.frameIndex << endl;
 			}
 		}

@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     ScStatus status = scInitialize();
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScInitialize failed!" << endl;
+		cout << "scInitialize failed!" << endl;
 		system("pause");
 		return -1;
 	}
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed!" << endl;
+		cout << "scGetDeviceCount failed!" << endl;
 		system("pause");
 		return -1;
 	}

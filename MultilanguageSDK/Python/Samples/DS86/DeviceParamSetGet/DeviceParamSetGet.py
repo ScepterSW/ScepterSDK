@@ -41,7 +41,7 @@ if  ret != 0:
     print('scOpenDeviceBySN failed: ' + str(ret))
     exit()
 	
-print("open device successful,status :"+ str(ret))
+print("scOpenDeviceBySN,status :"+ str(ret))
 
 ret = camera.scStartStream()
 if  ret != 0:
@@ -65,13 +65,13 @@ if  ret == 0:
     params.k5,
     params.k6)
 else:
-    print("scGetSensorIntrinsicParameters SC_TOF_SENSOR failed:",ret)
+    print("scGetSensorIntrinsicParameters SC_TOF_SENSOR failed status:",ret)
 
 ret, gmmgain = camera.scGetIRGMMGain()
 if  ret == 0:
     print("scGetIRGMMGain :",gmmgain)
 else:
-    print("scGetIRGMMGain failed:",ret)
+    print("scGetIRGMMGain failed status:",ret)
 
 ret = camera.scStopStream()
 if  ret == 0:
@@ -81,7 +81,7 @@ else:
 
 ret = camera.scCloseDevice()     
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret)) 
            

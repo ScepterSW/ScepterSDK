@@ -34,9 +34,9 @@ if  ret == 0:
 
     ret = camera.scStartStream()
     if  ret == 0:
-        print("start stream successful")
+        print("scStartStream successful")
     else:
-        print("scStartStream failed:",ret)
+        print("scStartStream failed status:",ret)
 
  
     colorSlope = c_uint16(7495)
@@ -46,7 +46,7 @@ if  ret == 0:
 
             ret, frameready = camera.scGetFrameReady(c_uint16(1200))
             if  ret !=0:
-                print("scGetFrameReady failed:",ret)
+                print("scGetFrameReady failed status:",ret)
                 continue
             hasDepth=0
             hasIR =0
@@ -57,7 +57,7 @@ if  ret == 0:
                     hasDepth=1
                    
                 else:
-                    print("get depth frame failed:",ret)
+                    print("get depth frame failed status:",ret)
  
             if  frameready.ir:
                 ret,irframe = camera.scGetFrame(ScFrameType.SC_IR_FRAME)
@@ -65,7 +65,7 @@ if  ret == 0:
                     hasIR =1
                   
                 else:
-                    print("get ir frame failed:",ret)
+                    print("get ir frame failed status:",ret)
  
             if  hasDepth==1:
                 frametmp = numpy.ctypeslib.as_array(depthframe.pFrameData, (1, depthframe.width * depthframe.height * 2))

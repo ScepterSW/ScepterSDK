@@ -44,7 +44,7 @@ else:
 for i in range(camera_count): 
     ret = cameras[i].scStartStream()       
     if  ret == 0:
-        print(device_infolist[i].serialNumber,"start stream successful")
+        print(device_infolist[i].serialNumber,"scStartStream successful")
     else:
         print(device_infolist[i].serialNumber,'scStartStream failed: ' + str(ret))  
 
@@ -54,7 +54,7 @@ while 1:
     for i in range(camera_count): 
         ret, frameready = cameras[i].scGetFrameReady(c_uint16(1200))
         if  ret !=0:
-            print("scGetFrameReady failed:",ret)
+            print("scGetFrameReady failed status:",ret)
             continue
                         
         if  frameready.depth:      
@@ -80,7 +80,7 @@ for i in range(camera_count):
 
     ret = cameras[i].scCloseDevice()       
     if  ret == 0:
-        print("close device successful")
+        print("scCloseDevice successful")
     else:
         print('scCloseDevice failed: ' + str(ret))  
     

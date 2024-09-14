@@ -1,3 +1,3 @@
 ## Details
-- For more information, see the wiki at **https://sceptersw.github.io/Scepter-Wiki/#/zh-cn/ScepterSDK/3rd-Party%20Plugin/Overview**.
+- For more information, see the wiki at **https://wiki.vzense.com/#/en/ScepterSDK/3rd-Party-Plugin/Overview**.
 

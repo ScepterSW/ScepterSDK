@@ -29,7 +29,7 @@ namespace ColorResolutionChange
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -80,7 +80,7 @@ namespace ColorResolutionChange
                 return;
             }
 
-            Console.WriteLine("open device successful,status :" + status);
+            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
             //switch ColorResolution
             int resolution_w = new int();
@@ -123,7 +123,7 @@ namespace ColorResolutionChange
                     if (status == ScStatus.SC_OK && ColorFrame.pFrameData != IntPtr.Zero
                     && ColorFrame.width == 640)
                     {
-                        Console.WriteLine("get Frame successful,status:" + status + "  "
+                        Console.WriteLine("VN_GetFrame,status:" + status + "  "
                              + "resolution: " + ColorFrame.width + "x" + ColorFrame.height);
                     }
                 }
@@ -161,7 +161,7 @@ namespace ColorResolutionChange
                                 && ColorFrame.width == 1600)
 
                     {
-                        Console.WriteLine("get Frame successful,status:" + status + "  "
+                        Console.WriteLine("VN_GetFrame,status:" + status + "  "
                             + "resolution: " + ColorFrame.width + "x" + ColorFrame.height);
                     }
                 }

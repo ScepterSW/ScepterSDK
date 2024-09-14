@@ -29,7 +29,7 @@ namespace PointCloudCaptureAndSaveDepthImgToColorSensor
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -80,7 +80,7 @@ namespace PointCloudCaptureAndSaveDepthImgToColorSensor
                 return;
             }
 
-            Console.WriteLine("open device successful,status :" + status);
+            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
             //switch ColorResolution
             int resolution_w = 800;
@@ -129,8 +129,8 @@ namespace PointCloudCaptureAndSaveDepthImgToColorSensor
                     status = VNAPI.VN_GetFrame(deviceHandle, ScFrameType.SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, ref frame);
                     if (status == ScStatus.SC_OK && frame.pFrameData != IntPtr.Zero)
                     {
-                        Console.WriteLine("get Frame successful,status:" + status + "  "
-                            + "frameTpye:" + frame.frameType + "  "
+                        Console.WriteLine("VN_GetFrame,status:" + status + "  "
+                            + "frameType:" + frame.frameType + "  "
                             + "frameIndex:" + frame.frameIndex);
                         // once save
                         int len = frame.width * frame.height;

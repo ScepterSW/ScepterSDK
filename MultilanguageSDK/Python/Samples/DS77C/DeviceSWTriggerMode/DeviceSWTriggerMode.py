@@ -41,7 +41,7 @@ if  ret != 0:
     print('scOpenDeviceBySN failed: ' + str(ret))
     exit()
 	
-print("open device successful,status :"+ str(ret))
+print("scOpenDeviceBySN,status :"+ str(ret))
 
 ret = camera.scStartStream()
 if  ret != 0:
@@ -50,7 +50,7 @@ if  ret != 0:
 
 ret = camera.scSetWorkMode(ScWorkMode.SC_SOFTWARE_TRIGGER_MODE)
 if  ret != 0:  
-    print("scSetWorkMode failed:",ret)
+    print("scSetWorkMode failed status:",ret)
 
 frameRate = camera.scGetFrameRate()
 print("scGetFrameRate :",frameRate[1])
@@ -59,11 +59,11 @@ for i in range(30):
 
     ret = camera.scSoftwareTriggerOnce()
     if  ret != 0:  
-        print("scSoftwareTriggerOnce failed:",ret)
+        print("scSoftwareTriggerOnce failed status:",ret)
 
     ret, frameready = camera.scGetFrameReady(c_uint16(1200))
     if  ret !=0:
-        print("scGetFrameReady failed:",ret)
+        print("scGetFrameReady failed status:",ret)
         continue       
     if  frameready.depth:      
         ret,frame = camera.scGetFrame(ScFrameType.SC_DEPTH_FRAME)
@@ -75,7 +75,7 @@ for i in range(30):
 
 ret = camera.scSetWorkMode(ScWorkMode.SC_ACTIVE_MODE)
 if  ret != 0:  
-    print("scSetWorkMode failed:",ret)
+    print("scSetWorkMode failed status:",ret)
     
 ret = camera.scStopStream()
 if  ret == 0:
@@ -85,7 +85,7 @@ else:
 
 ret = camera.scCloseDevice()     
 if  ret == 0:
-    print("close device successful")
+    print("scCloseDevice successful")
 else:
     print('scCloseDevice failed: ' + str(ret)) 
            

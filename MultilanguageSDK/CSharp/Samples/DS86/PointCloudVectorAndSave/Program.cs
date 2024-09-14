@@ -30,7 +30,7 @@ namespace PointCloudVectorAndSave
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -81,7 +81,7 @@ namespace PointCloudVectorAndSave
                 return;
             }
 
-            Console.WriteLine("open device successful,status :" + status);
+            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
             ScSensorIntrinsicParameters cameraParam = new ScSensorIntrinsicParameters();
             status = VNAPI.VN_GetSensorIntrinsicParameters(deviceHandle, ScSensorType.SC_TOF_SENSOR, ref cameraParam);

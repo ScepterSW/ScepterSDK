@@ -13,10 +13,18 @@
 #include <sensor_msgs/msg/image.hpp>
 
 // opencv读取的图像数据传给sensor_msgs的图像消息
-#include <cv_bridge/cv_bridge.h>
+#ifdef JAZZY
+  #include <cv_bridge/cv_bridge.hpp>
+#else
+  #include <cv_bridge/cv_bridge.h>
+#endif
 
 // 用来发布和订阅图像信息
-#include <image_transport/image_transport.h>
+#ifdef JAZZY
+  #include <image_transport/image_transport.hpp>
+#else
+  #include <image_transport/image_transport.h>
+#endif
 #include "std_msgs/msg/string.hpp"
 #include <rcl_interfaces/msg/parameter_event.hpp>
 #include "pcl_conversions/pcl_conversions.h"

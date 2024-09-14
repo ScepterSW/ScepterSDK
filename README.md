@@ -15,7 +15,7 @@
 
 - Arm-Linux(AArch64)
 - Ubuntu16.04 (x86_64 platform), e.g. intel i5,i7
-- Ubuntu18.04 (x86_64 platform), e.g. intel i5,i7
+- Ubuntu(x86_64 platform), e.g. intel i5,i7
 - Windows 10/11
 
 ### Folder description
@@ -29,10 +29,9 @@
    - The Ubuntu16.04 folder is used for Ubuntu16.04 platform software development and contains the header files and library files,  that is developed for personal computer platform(x86_64), use standard compiler x86_64-linux-gnu(v5.4.0)
    - The Ubuntu16.04 folder also has some samples that show the sequence of API calls and how to use them
    
--  **Ubuntu18.04** 
+-  **Ubuntu** 
 
-    - The Ubuntu18.04 folder is used for Ubuntu18.04 platform software development and contains the header files and library files,  that is developed for personal computer platform(x86_64), use standard compiler x86_64-linux-gnu(v7.5.0), Ubuntu18.04 SDK package compatible with Ubuntu20.04
-    - The Ubuntu18.04 folder also has some samples that show the sequence of API calls and how to use them
+    - Ubuntu directory contains the personal computer platform (with the standard compiler x86_64-linux-gnu) Ubuntu18.04/20.04/22.04/24.04 development package.
 
 -  **Windows** 
 

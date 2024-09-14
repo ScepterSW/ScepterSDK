@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceStartStopStreaming", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceSWTriggerMode", "DeviceSWTriggerMode\DeviceSWTriggerMode.csproj", "{9CC08B30-8A76-48CE-9C37-4BEEE9CACDE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SingleFrameDelayTest", "SingleFrameDelayTest\SingleFrameDelayTest.csproj", "{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameCaptureAndSave", "FrameCaptureAndSave\FrameCaptureAndSave.csproj", "{12D07656-ED7D-4458-B7A2-E18F177151C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiConnection", "MultiConnection\MultiConnection.csproj", "{C6D771A9-EC5E-40F8-910B-3268B9513810}"
@@ -197,6 +199,18 @@ Global
 		{9CC08B30-8A76-48CE-9C37-4BEEE9CACDE1}.Release|x64.Build.0 = Release|x64
 		{9CC08B30-8A76-48CE-9C37-4BEEE9CACDE1}.Release|x86.ActiveCfg = Release|Any CPU
 		{9CC08B30-8A76-48CE-9C37-4BEEE9CACDE1}.Release|x86.Build.0 = Release|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Debug|x64.ActiveCfg = Debug|x64
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Debug|x64.Build.0 = Debug|x64
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Debug|x86.Build.0 = Debug|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Release|x64.ActiveCfg = Release|x64
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Release|x64.Build.0 = Release|x64
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Release|x86.ActiveCfg = Release|Any CPU
+		{9CC0CACD-8A76-48CE-9C37-4BEEE98B30E1}.Release|x86.Build.0 = Release|Any CPU
 		{12D07656-ED7D-4458-B7A2-E18F177151C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{12D07656-ED7D-4458-B7A2-E18F177151C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12D07656-ED7D-4458-B7A2-E18F177151C3}.Debug|x64.ActiveCfg = Debug|x64

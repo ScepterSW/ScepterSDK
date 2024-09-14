@@ -18,6 +18,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+if($ENV{ROS_DISTRO} STREQUAL jazzy)
+    ADD_DEFINITIONS(-DJAZZY)
+endif()
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -51,7 +55,10 @@ find_library(libScepter_api NAMES libScepter_api.so PATHS dependencies/Lib/)
 include_directories(${PCL_INCLUDE_DIRS})
 include_directories(include include dependencies/Include ${OpenCV_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} 
  /usr/include/eigen3/
- /usr/include/boost/)
+ /usr/include/boost/
+ $ENV{AMENT_PREFIX_PATH}/include/cv_bridge
+ $ENV{AMENT_PREFIX_PATH}/include/image_transport
+ $ENV{AMENT_PREFIX_PATH}/include/tf2_geometry_msgs)
 
  
  

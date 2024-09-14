@@ -25,7 +25,7 @@ namespace ColorExposureTimeSetGet
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -76,7 +76,7 @@ namespace ColorExposureTimeSetGet
                 return;
             }
 
-            Console.WriteLine("open device successful,status :" + status);
+            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
             //Starts capturing the image stream
             status = VNAPI.VN_StartStream(deviceHandle);

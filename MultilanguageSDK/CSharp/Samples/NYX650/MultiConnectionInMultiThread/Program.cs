@@ -22,7 +22,7 @@ namespace MultiConnectionInMultiThread
             status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -35,7 +35,7 @@ namespace MultiConnectionInMultiThread
                 status = VNAPI.VN_GetDeviceCount(ref deviceCount, 3000);
                 if (status != ScStatus.SC_OK)
                 {
-                    Console.WriteLine("VN_GetDeviceCount failed! make sure pointer valid or called scInitialize()");
+                    Console.WriteLine("VN_GetDeviceCount failed! make sure pointer valid or called VN_Initialize()");
                     Console.ReadKey(true);
                     return;
                 }

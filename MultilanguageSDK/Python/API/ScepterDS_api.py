@@ -20,12 +20,12 @@ class ScepterTofCam():
                 print('os_info:',type(os_info))
                 system_info = os_info.version
                 print('version:',system_info)
-                if system_info.find('18.04') != -1 or system_info.find('20.04') != -1:
-                    libpath = (os.path.abspath(os.path.dirname(os.getcwd()) + os.path.sep + "../../../../BaseSDK/"))+"/Ubuntu18.04/Lib/libScepter_api.so"
+                if system_info.find('16.04') != -1:
+                    libpath = (os.path.abspath(os.path.dirname(os.getcwd()) + os.path.sep + "../../../../BaseSDK/"))+"/Ubuntu16.04/Lib/libScepter_api.so"
                     print(libpath)
                     self.sc_cam_lib = cdll.LoadLibrary(libpath)
                 else:
-                    libpath = (os.path.abspath(os.path.dirname(os.getcwd()) + os.path.sep + "../../../../BaseSDK/"))+"/Ubuntu16.04/Lib/libScepter_api.so"
+                    libpath = (os.path.abspath(os.path.dirname(os.getcwd()) + os.path.sep + "../../../../BaseSDK/"))+"/Ubuntu/Lib/libScepter_api.so"
                     print(libpath)
                     self.sc_cam_lib = cdll.LoadLibrary(libpath)
             elif machine_ == 'aarch64':

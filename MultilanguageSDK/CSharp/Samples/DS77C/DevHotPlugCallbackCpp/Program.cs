@@ -57,7 +57,7 @@ namespace DevHotPlugCallbackCpp
             ScStatus status = VNAPI.VN_Initialize();
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("ScInitialize failed status:" + status);
+                Console.WriteLine("VN_Initialize failed status:" + status);
                 Console.ReadKey(true);
                 return;
             }
@@ -65,7 +65,7 @@ namespace DevHotPlugCallbackCpp
             status = VNAPI.VN_GetDeviceCount(ref deviceCount, 3000);
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_ScGetDeviceCount failed! make sure pointer valid or called VN_Initialize");
+                Console.WriteLine("VN_GetDeviceCount failed! make sure pointer valid or called VN_Initialize");
                 Console.ReadKey(true);
                 return;
             }
@@ -139,7 +139,7 @@ namespace DevHotPlugCallbackCpp
                 return false;
             }
 
-            Console.WriteLine("open device successful,status :" + status);
+            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
             status = VNAPI.VN_StartStream(deviceHandle);
 

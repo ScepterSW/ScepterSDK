@@ -17,7 +17,7 @@ int main()
 	status = scInitialize();
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScInitialize failed status:" <<status << endl;
+		cout << "scInitialize failed status:" <<status << endl;
 		system("pause");
 		return -1;
 	}
@@ -28,7 +28,7 @@ int main()
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
+		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
 		system("pause");
 		return -1;
 	}
@@ -59,7 +59,7 @@ int main()
 		cout << "OpenDevice failed status:" <<status << endl;
 		return -1;
 	}
-	cout << "open device successful,status :" << status << endl;
+	cout << "scOpenDeviceBySN status :" << status << endl;
 
 	//1.close device
 	//2.SDK shutdown

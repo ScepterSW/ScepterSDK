@@ -18,7 +18,7 @@ int main()
 	status = scInitialize();
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScInitialize failed status:" <<status << endl;
+		cout << "scInitialize failed status:" <<status << endl;
 		system("pause");
 		return -1;
 	}
@@ -29,7 +29,7 @@ int main()
 	status = scGetDeviceCount(&deviceCount, 3000);
 	if (status != ScStatus::SC_OK)
 	{
-		cout << "ScGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
+		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
 		system("pause");
 		return -1;
 	}
@@ -69,7 +69,7 @@ int main()
 		return false;
 	}
 
-    cout << "open device successful,status :" << status << endl;
+    cout << "scOpenDeviceBySN status :" << status << endl;
 
 	//Starts capturing the image stream
 	status = scStartStream(deviceHandle);
