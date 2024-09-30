@@ -88,6 +88,9 @@ typedef enum
     SC_NOT_FIND_DRIVERS_FOLDER      = -109,   //!< Please check whether the Drivers directory exists.
     SC_CAMERA_OPENING               = -110,   //!< The camera is openin,by another Sc_OpenDeviceByXXX API.
     SC_CAMERA_OPENED_BY_ANOTHER_APP = -111,   //!< The camera has been opened by another APP.
+	SC_GET_AI_RESULT_TIME_OUT       = -112,   //!< Capture the next AI result time out.
+	SC_MORPH_AI_LIB_ERROR           = -113,   //!< The morph Al library is not exist or initialized failed.
+
 
     SC_OTHERS                       = -255,   //!< An unknown error occurred.
 } ScStatus;

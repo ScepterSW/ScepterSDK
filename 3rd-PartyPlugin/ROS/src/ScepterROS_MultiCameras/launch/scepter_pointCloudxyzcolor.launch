@@ -1,4 +1,0 @@
-<launch>
-    <include file="$(find ScepterROS_MultiCameras)/launch/pointCloudxyzcolor_camera1.launch"/>
-    <include file="$(find ScepterROS_MultiCameras)/launch/pointCloudxyzcolor_camera2.launch"/>
-</launch>

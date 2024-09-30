@@ -1,3 +1,7 @@
+v24.9.1
+- Support MorphAI
+- Fix some bugs
+
 Ver1.1.4
 - Optimizate API name
 
