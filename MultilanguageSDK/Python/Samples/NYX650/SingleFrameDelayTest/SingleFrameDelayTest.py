@@ -1,6 +1,9 @@
 from pickle import FALSE, TRUE
 import sys
-sys.path.append('../../../')
+currentPath =  sys.path[0]
+pos = currentPath.find('Samples')
+libpath = currentPath[:pos]
+sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
@@ -28,7 +31,7 @@ else:
     exit()
 
 if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-	print("connect statu:",device_info.status)  
+	print("connect status:",device_info.status)  
 	print("The device state does not support connection.")
 	exit()
 else:
@@ -76,11 +79,11 @@ file.write("frameIndex,TotalDelay,ExcludeDelayofExposure\n")
 number = int(input('Please input the number of tests:'))
 for i in range(number):
     ret = camera.scSoftwareTriggerOnce()
-    startTime = int(time.time()*1000)
+    startTime = time.perf_counter()
     if  ret != 0:  
         print("scSoftwareTriggerOnce failed:",ret)
 
-    ret, frameready = camera.scGetFrameReady(c_uint16(1200))
+    ret, frameready = camera.scGetFrameReady(c_uint16(15000))
     if  ret != 0:
         print("scGetFrameReady failed status:",ret)
         continue       
@@ -89,14 +92,15 @@ for i in range(number):
         if  ret == 0:
             if 0 == frame.frameIndex % 10:
                 print("scGetFrame,status:", ret, "  ", "frameType:", frame.frameType, "  ", "frameIndex:", frame.frameIndex)
-            endTime = int(time.time()*1000)
+            endTime = time.perf_counter()
+            endTimeUtc = int(time.time()*1000)
             exposureEndTime = frame.hardwaretimestamp
             frameIntervalTime = endTime - startTime
-            frameIntervalNtpTime = endTime - exposureEndTime
+            frameIntervalNtpTime = endTimeUtc - exposureEndTime
             if frameIntervalNtpTime > 2000:
-                file.write("{0},{1},N/A\n".format(frame.frameIndex, frameIntervalTime))
+                file.write("{0},{1},N/A\n".format(frame.frameIndex, int(frameIntervalTime*1000)))
             else:
-                file.write("{0},{1},{2}\n".format(frame.frameIndex, frameIntervalTime, frameIntervalNtpTime))
+                file.write("{0},{1},{2}\n".format(frame.frameIndex, int(frameIntervalTime*1000), frameIntervalNtpTime))
     time.sleep(1/frameRate)
 file.close()
 

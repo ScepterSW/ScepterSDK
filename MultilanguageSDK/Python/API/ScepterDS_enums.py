@@ -5,7 +5,7 @@ from enum import Enum
 class ScFrameType(Enum):
     SC_DEPTH_FRAME       = 0     
     SC_IR_FRAME          = 1
-    SC_COLOR_FRAMEE      = 3
+    SC_COLOR_FRAME      = 3
     SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME = 4
     SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME = 5
         
@@ -74,9 +74,13 @@ class ScWorkMode(Enum):
     SC_ACTIVE_MODE           = 0x00
     SC_HARDWARE_TRIGGER_MODE = 0x01
     SC_SOFTWARE_TRIGGER_MODE = 0x02
-    
+
 class ScExposureControlMode(Enum):
     SC_EXPOSURE_CONTROL_MODE_AUTO   = 0
     SC_EXPOSURE_CONTROL_MODE_MANUAL = 1
- 
+
+class ScAIModuleMode(Enum):
+    AI_CONTINUOUS_RUN_MODE= 0x00
+    AI_SINGLE_RUN_MODE = 0x01
+    
 

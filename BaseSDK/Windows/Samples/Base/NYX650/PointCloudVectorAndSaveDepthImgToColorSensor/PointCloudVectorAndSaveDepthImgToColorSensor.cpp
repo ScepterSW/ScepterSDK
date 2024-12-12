@@ -2,49 +2,45 @@
 #include <iostream>
 #include "Scepter_api.h"
 #include <fstream>
-#define frameSpace 20
 
+#define frameSpace 20
 using namespace std;
 
 int main()
 {
-	cout << "---PointCloudVectorAndSaveDepthImgToColorSensor---"<< endl;
+	cout << "---PointCloudVectorAndSaveDepthImgToColorSensor---" << endl;
 
-	//about dev
 	uint32_t deviceCount;
 	ScDeviceInfo* pDeviceListInfo = NULL;
 	ScDeviceHandle deviceHandle = 0;
 	ScStatus status = SC_OTHERS;
-	
-	//about frame
-	
-	ScFrameReady FrameReady = { 0 };
+	ScFrameReady frameReady = { 0 };
 	ScFrame frame = { 0 };
 
-	//SDK Initialize
 	status = scInitialize();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scInitialize failed status:" <<status << endl;
-		system("pause");
+		cout << "[scInitialize] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.Search and notice the count of devices.
-	//2.get infomation of the devices. 
-	//3.open devices accroding to the info.
 	status = scGetDeviceCount(&deviceCount, 3000);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
-		system("pause");
+		cout << "[scGetDeviceCount] success, ScStatus(" << status << "). The device count is " << deviceCount << endl;
+	}
+	else
+	{
+		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
-		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
 		return -1;
 	}
 
@@ -52,139 +48,179 @@ int main()
 	status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
 	if (status == ScStatus::SC_OK)
 	{
+		cout << "[scGetDeviceInfoList] success, ScStatus(" << status << ").";
 		if (SC_CONNECTABLE != pDeviceListInfo[0].status)
 		{
-			cout << "connect status: " << pDeviceListInfo[0].status << endl;
-			cout << "The device state does not support connection."<< endl;
+			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
+			delete[] pDeviceListInfo;
+			pDeviceListInfo = NULL;
 			return -1;
 		}
 	}
 	else
 	{
-		cout << "GetDeviceListInfo failed status:" << status << endl;
+		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 		return -1;
 	}
 
-	cout << "serialNumber:" << pDeviceListInfo[0].serialNumber << endl
-		<< "ip:" << pDeviceListInfo[0].ip << endl
-		<< "connectStatus:" << pDeviceListInfo[0].status << endl;
+	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
+		<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
 
 	status = scOpenDeviceBySN(pDeviceListInfo[0].serialNumber, &deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "OpenDevice failed status:" <<status << endl;
-		return -1;
-	}
-
-    cout << "scOpenDeviceBySN status :" << status << endl;
-
-	//switch ColorResolution
-	int resolution_w = 800;
-	int resolution_h = 600;
-	status = scSetColorResolution(deviceHandle, resolution_w, resolution_h);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scSetColorResolution failed status:" << status << endl;
-		return -1;
+		cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 	}
 	else
 	{
-		cout << "set to 800_600" << endl;
-	}
-	//Starts capturing the image stream
-	status = scStartStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scStartStream failed status:" << status << endl;
+		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 		return -1;
 	}
-	//set Mapper
-	status = scSetTransformDepthImgToColorSensorEnabled(deviceHandle, true);
-	if (status == SC_OK)
+
+	int resolution_w = 800;
+	int resolution_h = 600;
+	status = scSetColorResolution(deviceHandle, resolution_w, resolution_h);
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetTransformDepthImgToColorSensorEnabled Enabled" << endl;
+		cout << "[scSetColorResolution] success, ScStatus(" << status << "). Set color sensor resolution 800 * 600." << endl;
+	}
+	else
+	{
+		cout << "[scSetColorResolution] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
 
-	ScSensorIntrinsicParameters cameraParam = {};
-	scGetSensorIntrinsicParameters(deviceHandle, SC_COLOR_SENSOR, &cameraParam);
+	status = scStartStream(deviceHandle);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scStartStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
 
-	//1.ReadNextFrame.
-	//2.GetFrame acoording to Ready flag and Frametype.
-	//3.save points.
+	status = scSetTransformDepthImgToColorSensorEnabled(deviceHandle, true);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scSetTransformDepthImgToColorSensorEnabled] success, ScStatus(" << status << "). Enable transform depth frame to color frame." << endl;
+	}
+	else
+	{
+		cout << "[scSetTransformDepthImgToColorSensorEnabled] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
+	ScSensorIntrinsicParameters cameraParam = { 0 };
+	status = scGetSensorIntrinsicParameters(deviceHandle, SC_COLOR_SENSOR, &cameraParam);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scGetSensorIntrinsicParameters] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scGetSensorIntrinsicParameters] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
 	for (int i = 0; i < frameSpace; i++)
 	{
-		//scGetFrameReady may return SC_GET_FRAME_READY_TIME_OUT.
-		//Because it takes a little of time for scSetColorResolution to upload image data.
-		status = scGetFrameReady(deviceHandle, 1200, &FrameReady);
-		if (status != ScStatus::SC_OK)
+		status = scGetFrameReady(deviceHandle, 1200, &frameReady);
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "scGetFrameReady failed status:" <<status<< endl;
+			cout << "[scGetFrameReady] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scGetFrameReady] fail, ScStatus(" << status << ")." << endl;
 			continue;
 		}
 
-		if (1 == FrameReady.transformedDepth)
+		if (1 == frameReady.transformedDepth)
 		{
 			status = scGetFrame(deviceHandle, SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, &frame);
-			if (status == ScStatus::SC_OK&&frame.pFrameData != NULL)
+			if (status == ScStatus::SC_OK)
 			{
-				cout << "scGetFrame status:" << status << "  "
-					<< "frameType:" << frame.frameType << "  "
-					<< "frameIndex:" << frame.frameIndex << endl;
-			 
-				// once save
-				ofstream PointCloudWriter;
-				
-				PointCloudWriter.open("PointCloud.txt");
+				cout << "[scGetFrame] success, ScStatus(" << status << "). SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME <frameIndex>: " << frame.frameIndex << endl;
+
+				ofstream pointCloudWriter;
+				pointCloudWriter.open("PointCloud.txt");
 				ScFrame &srcFrame = frame;
 				const int WINDOW_SIZE = 100;
-				cout << srcFrame.width << "," << srcFrame.height << endl;
 				const uint16_t* pDepthFrameData = (uint16_t*)srcFrame.pFrameData;
 				for (int i = 0, offset = i * srcFrame.width; i < srcFrame.height; i++)
 				{
-					for (int j = 0; j < srcFrame.width ; j++)
+					for (int j = 0; j < srcFrame.width; j++)
 					{
-						ScDepthVector3 depthPoint = {j, i, pDepthFrameData[offset + j]};
+						ScDepthVector3 depthPoint = { j, i, pDepthFrameData[offset + j] };
 						ScVector3f worldV = {};
-						scConvertDepthToPointCloud(deviceHandle, &depthPoint, &worldV, 1, &cameraParam);
+						status = scConvertDepthToPointCloud(deviceHandle, &depthPoint, &worldV, 1, &cameraParam);
+						if (status == ScStatus::SC_OK)
+						{
+						}
+						else
+						{
+							cout << "[scConvertDepthToPointCloud] fail, ScStatus(" << status << ")." << endl;
+						}
 						if (0 < worldV.z && worldV.z < 0xFFFF)
 						{
-							PointCloudWriter << worldV.x << "\t" << worldV.y << "\t" << worldV.z << std::endl;
+							pointCloudWriter << worldV.x << "\t" << worldV.y << "\t" << worldV.z << endl;
 						}
 					}
 					offset += srcFrame.width;
 				}
-				std::cout << "Save point cloud successful in PointCloud.txt" << std::endl;
-				PointCloudWriter.close();
+				cout << "Save point cloud successful in PointCloud.txt" << endl;
+				pointCloudWriter.close();
 				break;
 			}
+			else
+			{
+				cout << "[scGetFrame] fail, ScStatus(" << status << ")." << endl;
+				return -1;
+			}
 		}
-
 	}
 
-
-	//StoSc capturing the image stream
 	status = scStopStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scStopStream failed status:" <<status<< endl;
+		cout << "[scStopStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.close device
-	//2.SDK shutdown
 	status = scCloseDevice(&deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scCloseDevice failed status:" <<status<< endl;
+		cout << "[scCloseDevice] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
+
 	status = scShutdown();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scShutdown failed status:" <<status<< endl;
+		cout << "[scShutdown] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "---end---"<< endl;
+	cout << "---End---" << endl;
 
 	return 0;
 }

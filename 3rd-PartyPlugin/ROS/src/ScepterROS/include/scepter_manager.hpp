@@ -21,6 +21,11 @@
 #include "Scepter_api.h"
 #include "ScepterROS/Sceptertof_roscppConfig.h"
 
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
 using namespace std;
 using namespace cv;
 
@@ -35,15 +40,18 @@ private:
     static void sigsegv_handler(int sig);
     void checkScStatus(ScStatus status, const std::string &message_on_fail);
     void set_sensor_intrinsics();
-    bool fillImagePtr(const ros::Time& time, const ScFrameType type, sensor_msgs::CameraInfoPtr& cameraInfoPtr, sensor_msgs::ImagePtr& imagePtr);
-
+    bool fillImagePtr(const ros::Time& time, const ScFrameType type, ScFrame& frame, sensor_msgs::CameraInfoPtr& cameraInfoPtr, sensor_msgs::ImagePtr& imagePtr);
+    void publishCloudPoint(const ros::Time& time, const ScFrame& srcFrame, ros::Publisher& pub, sensor_msgs::CameraInfoPtr& cameraInfoPtr, ScFrame* frameArr = nullptr);
+    void updateColorIntrinsicParameters();
     std::string camera_name_;
-    ros::NodeHandle color_nh_, depth_nh_, ir_nh_, alignedDepth_nh_, alignedColor_nh_;
+    ros::NodeHandle color_nh_, depth_nh_, ir_nh_, alignedDepth_nh_, alignedColor_nh_, depthCloudPoint_nh_,depth2colorCloudPoint_nh_;
     std::shared_ptr<image_transport::ImageTransport> color_it_, depth_it_, ir_it_, alignedDepth_it_, alignedColor_it_;
-    std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_, depth_info_, ir_info_, alignedDepth_info_, alignedColor_info_;
+    std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_, depth_info_, ir_info_, alignedDepth_info_, alignedColor_info_, depth_point_cloud_info_,depth2color_point_cloud_info_;
+    sensor_msgs::CameraInfoPtr cameraInfo_Ary[7];
 
     image_transport::CameraPublisher color_pub_, depth_pub_, ir_pub_, alignedDepth_pub_, alignedColor_pub_;
-
+    ros::Publisher depthCloudPointPub_, depth2colorCloudPointPub_;
+    ros::Publisher depthCloudPointCameraInfoPub_, depth2colorCloudPointCameraPub_;
     int32_t device_index_;
     uint16_t slope_;
     int color_width_, color_height_;
@@ -51,7 +59,8 @@ private:
     unsigned int sessionIndex_;  
     ScSensorIntrinsicParameters depth_intrinsics_{}, color_intrinsics_{};
     ScSensorExtrinsicParameters extrinsics_{};
-	int nHRDEnable_; //0;1
+    bool hdrEnabled;
+    bool wdrEnabled;
 };
 
 

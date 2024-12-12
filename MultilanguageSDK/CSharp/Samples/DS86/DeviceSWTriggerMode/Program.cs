@@ -58,7 +58,7 @@ namespace DeviceSWTriggerMode
             {
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect statu" + pDeviceListInfo[0].status);
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
                     Console.WriteLine("The device state does not support connection." );
                     return;
                 }
@@ -126,8 +126,8 @@ namespace DeviceSWTriggerMode
                     continue;
                 }
 
-                //If no image is ready within 1000ms, the function will return ScRetGetFrameReadyTimeOut
-                status = VNAPI.VN_GetFrameReady(deviceHandle, 1200, ref FrameReady);
+                //If no image is ready within 15000ms, the function will return ScRetGetFrameReadyTimeOut
+                status = VNAPI.VN_GetFrameReady(deviceHandle, 15000, ref FrameReady);
                 if (status != ScStatus.SC_OK)
                 {
                     Console.WriteLine("VN_GetFrameReady failed status:" + status);

@@ -1,48 +1,45 @@
 ﻿#include <thread>
 #include <iostream>
 #include "Scepter_api.h"
+
 #define frameSpace 10
 using namespace std;
 
 int main()
 {
-	cout << "---ColorResolutionChange---"<< endl;
+	cout << "---ColorResolutionChange---" << endl;
 
-	//about dev
 	uint32_t deviceCount;
 	ScDeviceInfo* pDeviceListInfo = NULL;
 	ScDeviceHandle deviceHandle = 0;
 	ScStatus status = SC_OTHERS;
-	
-	//about frame
-	
-	ScFrameReady FrameReady = {0};
+	ScFrameReady frameReady = { 0 };
 	ScFrame ColorFrame = { 0 };
 
-	//SDK Initialize
 	status = scInitialize();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scInitialize failed status:" <<status << endl;
-		system("pause");
+		cout << "[scInitialize] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.Search and notice the count of devices.
-	//2.get infomation of the devices. 
-	//3.open devices accroding to the info.
 	status = scGetDeviceCount(&deviceCount, 3000);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
-		system("pause");
+		cout << "[scGetDeviceCount] success, ScStatus(" << status << "). The device count is " << deviceCount << endl;
+	}
+	else
+	{
+		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
-		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
 		return -1;
 	}
 
@@ -50,142 +47,169 @@ int main()
 	status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
 	if (status == ScStatus::SC_OK)
 	{
+		cout << "[scGetDeviceInfoList] success, ScStatus(" << status << ").";
 		if (SC_CONNECTABLE != pDeviceListInfo[0].status)
 		{
-			cout << "connect status: " << pDeviceListInfo[0].status << endl;
-			cout << "The device state does not support connection."<< endl;
+			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
+			delete[] pDeviceListInfo;
+			pDeviceListInfo = NULL;
 			return -1;
 		}
 	}
 	else
 	{
-		cout << "GetDeviceListInfo failed status:" << status << endl;
+		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 		return -1;
 	}
 
-	cout << "serialNumber:" << pDeviceListInfo[0].serialNumber << endl
-	<< "ip:" << pDeviceListInfo[0].ip << endl
-	<< "connectStatus:" << pDeviceListInfo[0].status << endl;
+	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
+		<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
 
 	status = scOpenDeviceBySN(pDeviceListInfo[0].serialNumber, &deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "OpenDevice failed status:" <<status << endl;
-		return false;
+		cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
+	}
+	else
+	{
+		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
+		return -1;
 	}
 
-    cout << "scOpenDeviceBySN status :" << status << endl;
-
-	//switch ColorResolution
+	cout << endl << "---Test ColorResolution 640 * 480 ---" << endl;
 	int resolution_w = 640;
 	int resolution_h = 480;
-	//1.640_480
 	status = scSetColorResolution(deviceHandle, resolution_w, resolution_h);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetColorResolution failed status:" <<status<< endl;
-		return -1;
+		cout << "[scSetColorResolution] success, ScStatus(" << status << "). Set color sensor resolution 640 * 480." << endl;
 	}
 	else
 	{
-		cout << "set to 640_480" << endl;
-	}
-
-	//Starts capturing the image stream
-	status = scStartStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scStartStream failed status:" << status << endl;
+		cout << "[scSetColorResolution] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//scGetFrameReady may return SC_GET_FRAME_READY_TIME_OUT.
-	//Because it takes a little of time for scStartStream to upload image data.
+	status = scStartStream(deviceHandle);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scStartStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
 	for (int i = 0; i < frameSpace; i++)
 	{
-		status = scGetFrameReady(deviceHandle, 1200, &FrameReady);
-		if (status != ScStatus::SC_OK)
+		status = scGetFrameReady(deviceHandle, 1200, &frameReady);
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "scGetFrameReady failed status:" <<status<< endl;
+			cout << "[scGetFrameReady] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scGetFrameReady] fail, ScStatus(" << status << ")." << endl;
 			continue;
 		}
 
-		//cout resolution
-		if (1 == FrameReady.color)
+		if (1 == frameReady.color)
 		{
 			status = scGetFrame(deviceHandle, SC_COLOR_FRAME, &ColorFrame);
-			if (status == ScStatus::SC_OK && ColorFrame.pFrameData != NULL
-			&& ColorFrame.width==640 )
+			if (status == ScStatus::SC_OK)
 			{
-				cout << "scGetFrame status:" << status << "  "
-					 << "resolution: "<< ColorFrame.width  <<"x"<<ColorFrame.height<< endl;	
+				cout << "[scGetFrame] success, ScStatus(" << status << "). SC_COLOR_FRAME <frameIndex>: " << ColorFrame.frameIndex
+					<< ", resolution: " << ColorFrame.width << " * " << ColorFrame.height << endl;
+			}
+			else
+			{
+				cout << "[scGetFrame] fail, ScStatus(" << status << ")." << endl;
 			}
 		}
-
 	}
 
+	cout << endl << "---Test ColorResolution 1600 * 1200 ---" << endl;
 	resolution_w = 1600;
 	resolution_h = 1200;
-	//2.1600_1200
 	status = scSetColorResolution(deviceHandle, resolution_w, resolution_h);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetColorResolution failed status:" <<status<< endl;
-		return -1;
+		cout << "[scSetColorResolution] success, ScStatus(" << status << "). Set color sensor resolution 1600 * 1200." << endl;
 	}
 	else
 	{
-		cout << "set to 1600_1200" << endl;
+		cout << "[scSetColorResolution] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
 
-	//scGetFrameReady may return SC_GET_FRAME_READY_TIME_OUT.
-	//Because it takes a little of time for scSetColorResolution to upload image data.
 	for (int i = 0; i < frameSpace; i++)
 	{
-		status = scGetFrameReady(deviceHandle, 1200, &FrameReady);
-		if (status != ScStatus::SC_OK)
+		status = scGetFrameReady(deviceHandle, 1200, &frameReady);
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "scGetFrameReady failed status:" <<status<< endl;
+			cout << "[scGetFrameReady] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scGetFrameReady] fail, ScStatus(" << status << ")." << endl;
 			continue;
 		}
 
-		//cout resolution
-		if (1 == FrameReady.color)
+		if (1 == frameReady.color)
 		{
 			status = scGetFrame(deviceHandle, SC_COLOR_FRAME, &ColorFrame);
-			if (status == ScStatus::SC_OK && ColorFrame.pFrameData != NULL
-						&& ColorFrame.width==1600 )
-
+			if (status == ScStatus::SC_OK)
 			{
-				cout << "scGetFrame status:" << status << "  "
-					<< "resolution: "<< ColorFrame.width  <<"x"<<ColorFrame.height<< endl;	
+				cout << "[scGetFrame] success, ScStatus(" << status << "). SC_COLOR_FRAME <frameIndex>: " << ColorFrame.frameIndex
+					<< ", resolution: " << ColorFrame.width << " * " << ColorFrame.height << endl;
+			}
+			else
+			{
+				cout << "[scGetFrame] fail, ScStatus(" << status << ")." << endl;
 			}
 		}
-
 	}
-	//Stop capturing the image stream
+
 	status = scStopStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scStopStream failed status:" <<status<< endl;
+		cout << "[scStopStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.close device
-	//2.SDK shutdown
 	status = scCloseDevice(&deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scCloseDevice failed status:" <<status<< endl;
+		cout << "[scCloseDevice] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
+
 	status = scShutdown();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scShutdown failed status:" <<status<< endl;
+		cout << "[scShutdown] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout<< "---end---"<< endl;
+	cout << "---End---" << endl;
 
 	return 0;
 }

@@ -1,3 +1,12 @@
+ 
+- support SlaveN
+- support Morph
+
+
+Ver1.1.5
+- Add API scResetNetwork/scResetAll
+- Fix some bugs
+
 Ver1.1.4
 - Optimizate API name
 

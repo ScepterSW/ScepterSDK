@@ -1,6 +1,9 @@
 from pickle import FALSE, TRUE
 import sys
-sys.path.append('../../../')
+currentPath =  sys.path[0]
+pos = currentPath.find('Samples')
+libpath = currentPath[:pos]
+sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import cv2
@@ -68,7 +71,7 @@ if  ret == 0:
                     print("get ir frame failed status:",ret)
 
             if  frameready.color:      
-                ret,colorframe = camera.scGetFrame(ScFrameType.SC_COLOR_FRAMEE)
+                ret,colorframe = camera.scGetFrame(ScFrameType.SC_COLOR_FRAME)
                 if  ret == 0:
                     hasColor =1   
                 else:

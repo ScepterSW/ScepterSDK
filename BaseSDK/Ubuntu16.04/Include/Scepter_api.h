@@ -114,27 +114,13 @@ SCEPTER_C_API_EXPORT ScStatus scGetFrameReady(ScDeviceHandle device, uint16_t wa
 SCEPTER_C_API_EXPORT ScStatus scGetFrame(ScDeviceHandle device, ScFrameType frameType, ScFrame* pScFrame);
 
 /**
- * @brief        Set the working mode of the camera.
- * @param[in]    device      The handle of the device.
- * @param[in]    mode        The work mode of camera. For ActiveMode, set the Time filter default true, for SlaveMode, set the Time filter default false.
- * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
+ * @brief        Get the depth range in the current working mode of the device.
+ * @param[in]    device       The handle of the device.
+ * @param[out]   minValue     The min value of the depth
+ * @param[out]   maxValue     The ax value of the depth
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
-SCEPTER_C_API_EXPORT ScStatus scSetWorkMode(ScDeviceHandle device, ScWorkMode mode);
-
-/**
- * @brief        Get the working mode of the camera.
- * @param[in]    device      The handle of the device.
- * @param[out]   pMode       The work mode of camera.
- * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetWorkMode(ScDeviceHandle device, ScWorkMode* pMode);
-
-/**
- * @brief        Triggering a frame of image is only useful if the camera is in SC_SOFTWARE_TRIGGER_MODE.
- * @param[in]    device      The handle of the device.
- * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSoftwareTriggerOnce(ScDeviceHandle device);
+SCEPTER_C_API_EXPORT ScStatus scGetDepthRangeValue(ScDeviceHandle device, int16_t* minValue, int16_t* maxValue);
 
 /**
  * @brief        Returns the internal intrinsic and distortion coefficient parameters from the device specified by <code>device</code>.
@@ -169,6 +155,145 @@ SCEPTER_C_API_EXPORT ScStatus scGetFirmwareVersion(ScDeviceHandle device, char* 
  * @return       ::SC_OK        If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetDeviceMACAddress(ScDeviceHandle device, char* pMACAddress);
+
+/**
+ * @brief        Enables or disables DHCP. Default disabled
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetDeviceDHCPEnabled(ScDeviceHandle device, bool bEnabled);
+
+/**
+ * @brief        Returns the Boolean value of whether the device is in DHCP or not.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[out]   bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetDeviceDHCPEnabled(ScDeviceHandle device, bool* bEnabled);
+
+/**
+ * @brief        Set the IP address of the device in non-DHCP mode. The call takes effect after the device is restarted.
+ * @param[in]    device         The handle of the device.
+ * @param[in]    ipAddr         Pointer to a buffer in which to store the device IP address. the buffer default size is 16, and the last buffer set '\0'.
+ * @param[in]    length         The length of the buffer.
+ * @return       ::SC_OK        If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetDeviceIPAddr(ScDeviceHandle device, const char* ipAddr, int32_t length);
+
+/**
+ * @brief        Get the IP address of the device in non-DHCP mode.
+ * @param[in]    device         The handle of the device.
+ * @param[out]   ipAddr         Pointer to a buffer in which to store the device IP address. the buffer default size is 16, and the last buffer set '\0'.
+ * @return       ::SC_OK        If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetDeviceIPAddr(ScDeviceHandle device, char* ipAddr);
+
+/**
+ * @brief        Set the subnet mask of the device in non-DHCP mode. The call takes effect after the device is restarted.
+ * @param[in]    device         The handle of the device.
+ * @param[in]    pMask          Pointer to a buffer in which to store the subnet mask address. the buffer default size is 16, and the last buffer set '\0'.
+ * @param[in]    length         The length of the buffer.
+ * @return       ::SC_OK        If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetDeviceSubnetMask(ScDeviceHandle device, const char* pMask, int32_t length);
+
+/**
+ * @brief        Get the subnet mask of the device in non-DHCP mode.
+ * @param[in]    device         The handle of the device.
+ * @param[out]   pMask          Pointer to a buffer in which to store the device subnet mask address. the buffer default size is 16, and the last buffer set '\0'.
+ * @return       ::SC_OK        If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetDeviceSubnetMask(ScDeviceHandle device, char* pMask);
+
+/**
+ * @brief        Set the parameters for time sync, such as enable the NTP/PTP
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    params       The parameters defined by ::ScTimeSyncConfig.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetRealTimeSyncConfig(ScDeviceHandle device, ScTimeSyncConfig params);
+
+/**
+ * @brief        Get the parameters for time sync,such as the status of the NTP/PTP
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[out]   pParams      Pointer to a variable in which to store the returned value.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetRealTimeSyncConfig(ScDeviceHandle device, ScTimeSyncConfig* pParams);
+
+/**
+ * @brief        Set the ToF frame rate.The interface takes a long time, about 500 ms.
+ * @param[in]    device       The handle of the device on which to set the framerate.
+ * @param[in]    value        The rate value. Different products have different maximum values. Please refer to the product specification.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetFrameRate(ScDeviceHandle device, int32_t value);
+
+/**
+ * @brief        Get the ToF frame rate.
+ * @param[in]    device       The handle of the device on which to get the framerate.
+ * @param[out]   pValue       The rate value.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetFrameRate(ScDeviceHandle device, int32_t* pValue);
+
+/**
+ * @brief        Set the working mode of the camera.
+ * @param[in]    device      The handle of the device.
+ * @param[in]    mode        The work mode of camera. For ActiveMode, set the Time filter default true, for SlaveMode, set the Time filter default false.
+ * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetWorkMode(ScDeviceHandle device, ScWorkMode mode);
+
+/**
+ * @brief        Get the working mode of the camera.
+ * @param[in]    device      The handle of the device.
+ * @param[out]   pMode       The work mode of camera.
+ * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetWorkMode(ScDeviceHandle device, ScWorkMode* pMode);
+
+/**
+ * @brief        Set the count of frame in SC_SOFTWARE_TRIGGER_MODE.
+ *				 The more frames there are, the better frame's quality after algorithm processing
+ * @param[in]    device       The handle of the device on which to set the parameter
+ * @param[in]    frameCount	  The count of frame, in range [1,10].
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetSoftwareTriggerParameter(ScDeviceHandle device, uint8_t frameCount);
+
+/**
+ * @brief        Get the count of framer in SC_SOFTWARE_TRIGGER_MODE.
+ * @param[in]    device       The handle of the device from which to get the parameter
+ * @param[out]   pframeCount  Pointer to a variable in which to store the count of frame, in range [1,10].
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetSoftwareTriggerParameter(ScDeviceHandle device, uint8_t* pframeCount);
+
+/**
+ * @brief        Get a frame in SC_SOFTWARE_TRIGGER_MODE.
+ *               Call the scSetSoftwareTriggerParameter API to improve the quality of depth frame.
+ * @param[in]    device      The handle of the device.
+ * @return       ::SC_OK     If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSoftwareTriggerOnce(ScDeviceHandle device);
+
+/**
+ * @brief        Set the input signal parameters for Hardware Trigger.
+ * @param[in]    device       The handle of the device
+ * @param[in]    params       Pointer to a variable in which to store the parameters.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetInputSignalParamsForHWTrigger(ScDeviceHandle device, ScInputSignalParamsForHWTrigger params);
+
+/**
+ * @brief        Get the Input signal parameters for Hardware Trigger.
+ * @param[in]    device       The handle of the device
+ * @param[out]   pParams      Pointer to a variable in which to store the returned value.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetInputSignalParamsForHWTrigger(ScDeviceHandle device, ScInputSignalParamsForHWTrigger* pParams);
 
 /**
  * @brief        Set the device GMM gain on a device.
@@ -228,6 +353,15 @@ SCEPTER_C_API_EXPORT ScStatus scSetColorGain(ScDeviceHandle device, float params
 SCEPTER_C_API_EXPORT ScStatus scGetColorGain(ScDeviceHandle device, float* pParams);
 
 /**
+ * @brief        Get a list of image resolutions supported by Sensor
+ * @param[in]    device       The handle of the device.
+ * @param[in]    type         The sensor type
+ * @param[out]   pList        List of supported resolutions
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetSupportedResolutionList(ScDeviceHandle device, ScSensorType type, ScResolutionList* pList);
+
+/**
  * @brief        Set the color frame Resolution.
  * @param[in]    device       The handle of the device.
  * @param[in]    w            The width of color image
@@ -244,30 +378,6 @@ SCEPTER_C_API_EXPORT ScStatus scSetColorResolution(ScDeviceHandle device, int32_
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetColorResolution(ScDeviceHandle device, int32_t* pW, int32_t* pH);
-
-/**
- * @brief        Get a list of image resolutions supported by Sensor
- * @param[in]    device       The handle of the device.
- * @param[in]    type         The sensor type
- * @param[out]   pList        List of supported resolutions
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetSupportedResolutionList(ScDeviceHandle device, ScSensorType type, ScResolutionList* pList);
-
-/**
- * @brief        Set the ToF frame rate.The interface takes a long time, about 500 ms.
- * @param[in]    device       The handle of the device on which to set the framerate.
- * @param[in]    value        The rate value. Different products have different maximum values. Please refer to the product specification.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetFrameRate(ScDeviceHandle device, int32_t value);
-/**
- * @brief        Get the ToF frame rate.
- * @param[in]    device       The handle of the device on which to get the framerate.
- * @param[out]   pValue       The rate value.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetFrameRate(ScDeviceHandle device, int32_t* pValue);
 
 /**
  * @brief        Set the exposure mode of sensor.
@@ -329,6 +439,109 @@ SCEPTER_C_API_EXPORT ScStatus scGetColorAECMaxExposureTime(ScDeviceHandle device
  * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTime(ScDeviceHandle device, ScSensorType sensorType, int32_t* pMaxExposureTime);
+
+/**
+ * @brief        Enables or disables the HDR Mode of the ToF sensor with SC_EXPOSURE_CONTROL_MODE_MANUAL. Default enabled,
+ *               so if you want switch to the SC_EXPOSURE_CONTROL_MODE_AUTO, set HDR Mode disable firstly.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetHDRModeEnabled(ScDeviceHandle device, bool bEnabled);
+
+/**
+ * @brief        Returns the Boolean value of whether the HDR Mode of ToF sensor feature is enabled or disabled.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[out]   bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetHDRModeEnabled(ScDeviceHandle device, bool* bEnabled);
+
+/**
+ * @brief        Get the count of frame in HDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[out]   pCount           The frame count.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetFrameCountOfHDRMode(ScDeviceHandle device, int32_t* pCount);
+
+/**
+ * @brief        Set the exposure time of depth sensor with the frameIndex in HDR mode.
+ * @param[in]    device          The handle of the device on which to set the exposure time  in microseconds.
+ * @param[in]    frameIndex      The frameIndex from 0 to the count (get by scGetFrameCountOfHDRMode).
+ * @param[in]    exposureTime    The exposure time. The value must be within the maximum exposure time of sensor.
+ * @return       ::SC_OK         If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetExposureTimeOfHDR(ScDeviceHandle device, uint8_t frameIndex, int32_t exposureTime);
+
+/**
+ * @brief        Get the exposure time of depth sensor with the frameIndex in HDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[in]    frameIndex       The frameIndex from 0 to the count (get by scGetFrameCountOfHDRMode).
+ * @param[out]   pExposureTime    The exposure time.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetExposureTimeOfHDR(ScDeviceHandle device, uint8_t frameIndex, int32_t* pExposureTime);
+
+/**
+ * @brief        Get the maximum exposure time of depth sensor with the frameIndex in HDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[in]    frameIndex       The frameIndex from 0 to the count (get by scGetFrameCountOfHDRMode).
+ * @param[out]   pMaxExposureTime The maximum exposure time. The maximum exposure time is different at different frame rates.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTimeOfHDR(ScDeviceHandle device, uint8_t frameIndex, int32_t* pMaxExposureTime);
+
+/**
+ * @brief        Enables or disables the WDR Mode of the ToF sensor. Default enabled
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetWDRModeEnabled(ScDeviceHandle device, bool bEnabled);
+
+/**
+ * @brief        Returns the Boolean value of whether the WDRMode of ToF sensor feature is enabled or disabled.
+ * @param[in]    device       The handle of the device on which to enable or disable the feature.
+ * @param[out]   bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetWDRModeEnabled(ScDeviceHandle device, bool* bEnabled);
+
+/**
+ * @brief        Get the count of frame in WDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[out]   pCount           The frame count.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetFrameCountOfWDRMode(ScDeviceHandle device, int32_t* pCount);
+
+/**
+ * @brief        Set the exposure time of depth sensor with the frameIndex in WDR mode.
+ * @param[in]    device          The handle of the device on which to set the exposure time  in microseconds.
+ * @param[in]    frameIndex      The frameIndex from 0 to the count (get by scGetFrameCountOfWDRMode).
+ * @param[in]    exposureTime    The exposure time. The value must be within the maximum exposure time of sensor.
+ * @return       ::SC_OK         If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetExposureTimeOfWDR(ScDeviceHandle device, uint8_t frameIndex, int32_t exposureTime);
+
+/**
+ * @brief        Get the exposure time of depth sensor with the frameIndex in WDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[in]    frameIndex       The frameIndex from 0 to the count (get by scGetFrameCountOfWDRMode).
+ * @param[out]   pExposureTime    The exposure time.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetExposureTimeOfWDR(ScDeviceHandle device, uint8_t frameIndex, int32_t* pExposureTime);
+
+/**
+ * @brief        Get the maximum exposure time of depth sensor with the frameIndex in WDR mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[in]    frameIndex       The frameIndex from 0 to the count (get by scGetFrameCountOfWDRMode).
+ * @param[out]   pMaxExposureTime The maximum exposure time. The maximum exposure time is different at different frame rates.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTimeOfWDR(ScDeviceHandle device, uint8_t frameIndex, int32_t* pMaxExposureTime);
 
 /**
  * @brief        Set the parameters of the Time filter.
@@ -481,36 +694,6 @@ SCEPTER_C_API_EXPORT ScStatus scConvertDepthToPointCloud(ScDeviceHandle device, 
  * @return       ::SC_OK        If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scConvertDepthFrameToPointCloudVector(ScDeviceHandle device, const ScFrame* pDepthFrame, ScVector3f* pWorldVector);
-/**
- * @brief        Set hotplug status callback function
- * @param[in]    pCallback    Pointer to the callback function. See ::PtrHotPlugStatusCallback
- * @param[in]    pUserData    Pointer to the user data. See ::PtrHotPlugStatusCallback
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetHotPlugStatusCallback(PtrHotPlugStatusCallback pCallback, const void* pUserData);
-
-/**
- * @brief        Reboot the camera.
- * @param[in]    device          The handle of the device
- * @return       ::SC_OK         If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scRebootDevie(ScDeviceHandle device);
-
-/**
- * @brief        Set the input signal parameters for Hardware Trigger.
- * @param[in]    device       The handle of the device
- * @param[in]    params       Pointer to a variable in which to store the parameters.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetInputSignalParamsForHWTrigger(ScDeviceHandle device, ScInputSignalParamsForHWTrigger params);
-
-/**
- * @brief        Get the Input signal parameters for Hardware Trigger.
- * @param[in]    device       The handle of the device
- * @param[out]   pParams      Pointer to a variable in which to store the returned value.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetInputSignalParamsForHWTrigger(ScDeviceHandle device, ScInputSignalParamsForHWTrigger* pParams);
 
 /**
  * @brief        Set the parameters by Json file that can be saved by ScepterGUITool.
@@ -521,83 +704,7 @@ SCEPTER_C_API_EXPORT ScStatus scGetInputSignalParamsForHWTrigger(ScDeviceHandle 
 SCEPTER_C_API_EXPORT ScStatus scSetParamsByJson(ScDeviceHandle device, char* pfilePath);
 
 /**
- * @brief        Get the depth range in the current working mode of the device.
- * @param[in]    device       The handle of the device.
- * @param[out]   minValue     The min value of the depth
- * @param[out]   maxValue     The ax value of the depth
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetDepthRangeValue(ScDeviceHandle device, int16_t* minValue, int16_t* maxValue);
-
-/**
- * @brief        Set the parameters for time sync.
- * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[in]    params       Pointer to a variable in which to store the parameters.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetTimeSyncConfig(ScDeviceHandle device, ScTimeSyncConfig params);
-
-/**
- * @brief        Get the parameters for time sync.
- * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[out]   pParams      Pointer to a variable in which to store the returned value.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetTimeSyncConfig(ScDeviceHandle device, ScTimeSyncConfig* pParams);
-
-/**
- * @brief        Enables or disables the HDR Mode of the ToF sensor with SC_EXPOSURE_CONTROL_MODE_MANUAL. Default enabled,
- *               so if you want switch to the SC_EXPOSURE_CONTROL_MODE_AUTO, set HDR Mode disable firstly.
- * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[in]    bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetHDRModeEnabled(ScDeviceHandle device, bool bEnabled);
-/**
- * @brief        Returns the Boolean value of whether the HDRMode of ToF sensor feature is enabled or disabled.
- * @param[in]    device       The handle of the device on which to enable or disable the feature.
- * @param[out]   bEnabled     Set to <code>true</code> to enable the feature or <code>false</code> to disable the feature.
- * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetHDRModeEnabled(ScDeviceHandle device, bool* bEnabled);
-
-/**
- * @brief        Get the count of distance level in HDR mode.
- * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
- * @param[out]   pCount           The distance level count.
- * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetDistanceLevelCountOfHDRMode(ScDeviceHandle device, int32_t* pCount);
-
-/**
- * @brief        Set the exposure time of depth sensor with the level in HDR mode.
- * @param[in]    device          The handle of the device on which to set the exposure time  in microseconds.
- * @param[in]    level            The distance level from 0 to the count (get by scGetDistanceLevelCountOfHDRMode).
- * @param[in]    exposureTime    The exposure time. The value must be within the maximum exposure time of sensor.
- * @return       ::SC_OK         If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scSetExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t exposureTime);
-
-/**
- * @brief        Get the exposure time of depth sensor with the level in HDR mode.
- * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
- * @param[in]    level            The distance level from 0 to the count (get by scGetDistanceLevelCountOfHDRMode).
- * @param[out]   pExposureTime    The exposure time.
- * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t* pExposureTime);
-
-/**
- * @brief        Get the maximum exposure time of depth sensor with the level in HDR mode.
- * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
- * @param[in]    level            The distance level from 0 to the count (get by scGetDistanceLevelCountOfHDRMode).
- * @param[out]   pMaxExposureTime The maximum exposure time. The maximum exposure time is different at different frame rates.
- * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
- */
-SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTimeOfHDR(ScDeviceHandle device, uint8_t level, int32_t* pMaxExposureTime);
-
-/**
- * @brief        Export the parameter initialization file.
+ * @brief        Export the parameter initialization file from the device.
  * @param[in]    device       The handle of the device.
  * @param[in]    pfilePath    Pointer to the path of parameter initialization file.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
@@ -605,7 +712,7 @@ SCEPTER_C_API_EXPORT ScStatus scGetMaxExposureTimeOfHDR(ScDeviceHandle device, u
 SCEPTER_C_API_EXPORT ScStatus scExportParamInitFile(ScDeviceHandle device, char* pfilePath);
 
 /**
- * @brief        Import the parameter initialization file.
+ * @brief        Import the parameter initialization file into the device and take effect after reboot the device.
  * @param[in]    device       The handle of the device.
  * @param[in]    pfilePath    Pointer to the path of parameter initialization file.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
@@ -613,10 +720,42 @@ SCEPTER_C_API_EXPORT ScStatus scExportParamInitFile(ScDeviceHandle device, char*
 SCEPTER_C_API_EXPORT ScStatus scImportParamInitFile(ScDeviceHandle device, char* pfilePath);
 
 /**
- * @brief        Restore the parameter initialization file.
+ * @brief        Restore the parameter initialization file of the device.
  * @param[in]    device       The handle of the device.
- * @param[in]    pfilePath    Pointer to the path of parameter initialization file.
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scRestoreParamInitFile(ScDeviceHandle device);
+
+/**
+ * @brief        Reboot the camera.
+ * @param[in]    device          The handle of the device
+ * @return       ::SC_OK         If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scRebootDevie(ScDeviceHandle device);
+
+/**
+ * @brief        Set hotplug status callback function.
+ * @param[in]    pCallback    Pointer to the callback function. See ::PtrHotPlugStatusCallback
+ * @param[in]    pUserData    Pointer to the user data. See ::PtrHotPlugStatusCallback
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetHotPlugStatusCallback(PtrHotPlugStatusCallback pCallback, const void* pUserData);
+
+/**
+ * @brief        Input the firmware file path and start upgrading device firmware.
+ * @param[in]    device       The handle of the device.
+ * @param[in]    pImgPath     Pointer to the path of firmware file. The firmware upgrade file is in .img format.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scStartUpgradeFirmWare(ScDeviceHandle device, char* pImgPath);
+
+/**
+ * @brief        Get firmware upgrade status and progress.
+ * @param[in]    device       The handle of the device.
+ * @param[out]   pStatus      Pointer to the status of firmware upgrade. 0 indicates normal, other values indicate anomalies.
+ * @param[out]   pProcess     Pointer to the process of firmware upgrade, in range [0, 100]. Under normal circumstances, 100 indicates a successful upgrade.
+ * @return       ::SC_OK      if the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetUpgradeStatus(ScDeviceHandle device, int32_t* pStatus, int32_t* pProcess);
+
 #endif /* SCEPTER_API_H */

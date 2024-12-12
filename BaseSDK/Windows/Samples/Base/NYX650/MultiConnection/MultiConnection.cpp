@@ -1,158 +1,181 @@
 ﻿#include <thread>
 #include <iostream>
 #include "Scepter_api.h"
+
 #define frameSpace 10
 using namespace std;
 
 int main()
 {
-	cout << "---MultiConnection---"<< endl;
+	cout << "---MultiConnection---" << endl;
 
-	//about dev
 	uint32_t deviceCount = 0;
 	ScStatus status = SC_OTHERS;
 	ScDeviceHandle *deviceHandle = nullptr;
 	ScDeviceInfo* pDeviceListInfo = nullptr;
+	ScFrameReady frameReady = { 0 };
+	ScFrame depthFrame = { 0 };
 
-	
-	//about Frame
-	
-	ScFrameReady FrameReady = { 0 };
-	ScFrame Depth = { 0 };
-
-	//SDK Initialize
 	status = scInitialize();
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scInitialize failed status:" <<status << endl;
-		system("pause");
-		return -1;
-	}
-
-	//1.Search and notice the count of devices.
-	//2.get infomation of the devices. 
-	//3.open devices accroding to the info.
-	do
-	{
-		status = scGetDeviceCount(&deviceCount, 3000);
-		if (status != ScStatus::SC_OK)
-		{
-			cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
-			system("pause");
-			return -1;
-		}
-		cout << "Get device count: " << deviceCount << endl;
-	} while (deviceCount < 2);
-
-	deviceHandle = new ScDeviceHandle[deviceCount];
-	pDeviceListInfo = new ScDeviceInfo[deviceCount];
-
-	status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
 	if (status == ScStatus::SC_OK)
 	{
-		if (SC_CONNECTABLE != pDeviceListInfo[0].status)
-		{
-			cout << "connect status: " << pDeviceListInfo[0].status << endl;
-			cout << "The device state does not support connection."<< endl;
-			return -1;
-		}
+		cout << "[scInitialize] success, ScStatus(" << status << ")." << endl;
 	}
 	else
 	{
-		cout << "GetDeviceListInfo failed status:" << status << endl;
+		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
+
+	do
+	{
+		status = scGetDeviceCount(&deviceCount, 3000);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scGetDeviceCount] success, ScStatus(" << status << "). The device count is " << deviceCount << endl;
+		}
+		else
+		{
+			cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
+			return -1;
+		}
+	} while (deviceCount < 2);
+
+	pDeviceListInfo = new ScDeviceInfo[deviceCount];
+	status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scGetDeviceInfoList] success, ScStatus(" << status << ").";
+	}
+	else
+	{
+		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
+		return -1;
+	}
+
+	cout << endl;
 	for (int i = 0; i < deviceCount; i++)
 	{
-		cout << "CameraIndex: " << i << endl;
-		cout << "serialNumber:" << pDeviceListInfo[i].serialNumber << endl
-			<< "ip:" << pDeviceListInfo[i].ip << endl
-			<< "connectStatus:" << pDeviceListInfo[i].status << endl;
+		cout << " The device index: " << i << ", <serialNumber>: " << pDeviceListInfo[i].serialNumber
+			<< ", <ip>: " << pDeviceListInfo[i].ip << ", <status>: " << pDeviceListInfo[i].status << endl;
 	}
-	for(int i = 0;i < deviceCount; i++)
+
+	deviceHandle = new ScDeviceHandle[deviceCount];
+	for (int i = 0; i < deviceCount; i++)
 	{
 		status = scOpenDeviceBySN(pDeviceListInfo[i].serialNumber, &deviceHandle[i]);
-		if (status != ScStatus::SC_OK)
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "OpenDevice failed status:" <<status << endl;
+			cout << "[scOpenDeviceBySN] success, ScStatus(" << status << "). The device index: " << i << ", <serialNumber>: " << pDeviceListInfo[i].serialNumber << endl;
+		}
+		else
+		{
+			cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << "). The device index: " << i << ", <serialNumber>: " << pDeviceListInfo[i].serialNumber << endl;
+			delete[] pDeviceListInfo;
+			pDeviceListInfo = NULL;
+			delete[] deviceHandle;
+			deviceHandle = NULL;
+			return -1;
+		}
+	}
+	delete[] pDeviceListInfo;
+	pDeviceListInfo = NULL;
+
+	for (int i = 0; i < deviceCount; i++)
+	{
+		status = scStartStream(deviceHandle[i]);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scStartStream] success, ScStatus(" << status << "). The device index: " << i << endl;
+		}
+		else
+		{
+			cout << "[scStartStream] fail, ScStatus(" << status << "). The device index: " << i << endl;
+			delete[] deviceHandle;
+			deviceHandle = NULL;
 			return -1;
 		}
 	}
 
-    for (int i = 0; i < deviceCount; i++)
-    {
-        //Starts capturing the image stream
-        status = scStartStream(deviceHandle[i]);
-        if (status != ScStatus::SC_OK)
-        {
-            cout << "scStartStream failed status:" << status << endl;
-            return -1;
-        }
-    }
+	//Wait for the device to upload image data.
+	this_thread::sleep_for(chrono::milliseconds(1000));
 
-    //Wait for the device to upload image data
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-	//1.ReadNextFrame.
-	//2.Get depth Frame acoording to Ready flag.
 	for (int j = 0; j < frameSpace; j++)
 	{
 		for (int i = 0; i < deviceCount; i++)
 		{
 			if (deviceHandle[i])
 			{
-				ScFrame depthFrame = { 0 };
-				ScFrameReady frameReady = { 0 };
 				status = scGetFrameReady(deviceHandle[i], 1200, &frameReady);
-
-				if (status != SC_OK)
+				if (status == ScStatus::SC_OK)
 				{
-					cout << pDeviceListInfo[i].serialNumber <<"  scGetFrameReady failed status:" << status << endl;
+				}
+				else
+				{
+					cout << "[scGetFrameReady] fail, ScStatus(" << status << "). The device index: " << i << endl;
 					continue;
 				}
 
-				//Get depth frame, depth frame only output in following data mode
 				if (1 == frameReady.depth)
 				{
 					status = scGetFrame(deviceHandle[i], SC_DEPTH_FRAME, &depthFrame);
-
-					if (status == SC_OK && depthFrame.pFrameData != NULL)
+					if (status == ScStatus::SC_OK)
 					{
-						cout << pDeviceListInfo[i].serialNumber << " frameIndex :" << depthFrame.frameIndex << endl;
+						cout << "[scGetFrame] success, ScStatus(" << status << "). The device index: " << i << ", SC_DEPTH_FRAME <frameIndex>: " << depthFrame.frameIndex << endl;
 					}
 					else
 					{
-						cout << pDeviceListInfo[i].serialNumber << "scGetFrame SC_DEPTH_FRAME status:" << status  << endl;
+						cout << "[scGetFrame] fail, ScStatus(" << status << "). The device index: " << i << endl;
 					}
 				}
 			}
-
 		}
 	}
- 
-	//1.close device
-	//2.SDK shutdown
+
 	for (int i = 0; i < deviceCount; i++)
 	{
 		status = scStopStream(deviceHandle[i]);
-		if (status != ScStatus::SC_OK)
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "scStopStream failed status:" <<status<< endl;
+			cout << "[scStopStream] success, ScStatus(" << status << "). The device index: " << i << endl;
 		}
-		status = scCloseDevice(&deviceHandle[i]);
-		if (status != ScStatus::SC_OK)
+		else
 		{
-			cout << "scCloseDevice failed status:" <<status<< endl;
+			cout << "[scStopStream] fail, ScStatus(" << status << "). The device index: " << i << endl;
+			delete[] deviceHandle;
+			deviceHandle = NULL;
+			return -1;
+		}
+
+		status = scCloseDevice(&deviceHandle[i]);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scCloseDevice] success, ScStatus(" << status << "). The device index: " << i << endl;
+		}
+		else
+		{
+			cout << "[scCloseDevice] fail, ScStatus(" << status << "). The device index: " << i << endl;
+			delete[] deviceHandle;
+			deviceHandle = NULL;
+			return -1;
 		}
 	}
+	delete[] deviceHandle;
+	deviceHandle = NULL;
+
 	status = scShutdown();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scShutdown failed status:" <<status<< endl;
+		cout << "[scShutdown] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-
-	cout << "--end--"<< endl;
+	cout << "---End---" << endl;
 
 	return 0;
 }

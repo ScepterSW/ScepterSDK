@@ -1,50 +1,46 @@
 ﻿#include <thread>
 #include <iostream>
 #include "Scepter_api.h"
-#define frameSpace 20
 
+#define frameSpace 20
 using namespace std;
 
 int main()
 {
-	cout << "---DeviceHWTriggerMode---"<< endl;
+	cout << "---DeviceHWTriggerMode---" << endl;
 
-	//about dev
 	uint32_t deviceCount;
 	ScDeviceInfo* pDeviceListInfo = NULL;
 	ScDeviceHandle deviceHandle = 0;
 	ScStatus status = SC_OTHERS;
-
-	//about frame
-	
-	ScFrameReady FrameReady = { 0 };
+	ScFrameReady frameReady = { 0 };
 	ScFrame depthFrame = { 0 };
 	bool bSlaveEnabled = true;
 
-	//SDK Initialize
 	status = scInitialize();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scInitialize failed status:" <<status << endl;
-		system("pause");
+		cout << "[scInitialize] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.Search and notice the count of devices.
-	//2.get infomation of the devices. 
-	//3.open devices accroding to the info.
 	status = scGetDeviceCount(&deviceCount, 3000);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
-		system("pause");
+		cout << "[scGetDeviceCount] success, ScStatus(" << status << "). The device count is " << deviceCount << endl;
+	}
+	else
+	{
+		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
-		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
 		return -1;
 	}
 
@@ -52,106 +48,138 @@ int main()
 	status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
 	if (status == ScStatus::SC_OK)
 	{
+		cout << "[scGetDeviceInfoList] success, ScStatus(" << status << ").";
 		if (SC_CONNECTABLE != pDeviceListInfo[0].status)
 		{
-			cout << "connect status: " << pDeviceListInfo[0].status << endl;
-			cout << "The device state does not support connection."<< endl;
+			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
+			delete[] pDeviceListInfo;
+			pDeviceListInfo = NULL;
 			return -1;
 		}
 	}
 	else
 	{
-		cout << "GetDeviceListInfo failed status:" << status << endl;
+		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 		return -1;
 	}
-	
-	cout << "serialNumber:" << pDeviceListInfo[0].serialNumber << endl
-	<< "ip:" << pDeviceListInfo[0].ip << endl
-	<< "connectStatus:" << pDeviceListInfo[0].status << endl;
+
+	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
+		<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
 
 	status = scOpenDeviceBySN(pDeviceListInfo[0].serialNumber, &deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "OpenDevice failed status:" <<status << endl;
-		return false;
+		cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 	}
-	
-	//set slave true
+	else
+	{
+		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
+		return -1;
+	}
+
+	//Set work mode as hardware trigger, HDR and WDR functions need to be turned off in advance.
 	status = scSetWorkMode(deviceHandle, SC_HARDWARE_TRIGGER_MODE);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetWorkMode failed status:" << status << endl;
+		cout << "[scSetWorkMode] success, ScStatus(" << status << "). Set SC_HARDWARE_TRIGGER_MODE." << endl;
+	}
+	else
+	{
+		cout << "[scSetWorkMode] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//Starts capturing the image stream
 	status = scStartStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scStartStream failed status:" << status << endl;
+		cout << "[scStartStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-    cout << "Please trigger the hardware signal to start the hardware trigger test" << endl;
-
-	//1.hardware trigger.
-	//2.ReadNextFrame.
-	//3.GetFrame acoording to Ready flag and Frametype.
-	for(int i = 0;i < frameSpace; i++)
+	//The minimum time interval to trigger a signal is 1000/FPS milliseconds.
+	//Wait for an external trigger signal. If the external signal is triggered once, the device sends a frame.
+	cout << "Please trigger the hardware signal to start the hardware trigger test." << endl;
+	for (int i = 0; i < frameSpace; i++)
 	{
-        //The minimum time interval to trigger a signal is 1000/FPS milliseconds
-		//Wait for an external trigger signal. If the external signal is triggered once, the device sends a frame
-		//If no image is ready within 1200ms, the function will return ScRetGetFrameReadyTimeOut
-		status = scGetFrameReady(deviceHandle, 1200, &FrameReady);
-		if (status != ScStatus::SC_OK)
+		status = scGetFrameReady(deviceHandle, 1200, &frameReady);
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "scGetFrameReady failed status:" <<status<<endl;
+			cout << "[scGetFrameReady] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scGetFrameReady] fail, ScStatus(" << status << ")." << endl;
 			continue;
 		}
 
-		//depthFrame for example.
-		if (1 == FrameReady.depth)
+		if (1 == frameReady.depth)
 		{
 			status = scGetFrame(deviceHandle, SC_DEPTH_FRAME, &depthFrame);
-			if (depthFrame.pFrameData != NULL)
+			if (status == ScStatus::SC_OK)
 			{
-				cout << "scGetFrame status:" << status << "  "
-				<< "frameType:" << depthFrame.frameType << "  "
-				<< "frameIndex:" << depthFrame.frameIndex << endl;
+				cout << "[scGetFrame] success, ScStatus(" << status << "). SC_DEPTH_FRAME <frameIndex>: " << depthFrame.frameIndex << endl;
+			}
+			else
+			{
+				cout << "[scGetFrame] fail, ScStatus(" << status << ")." << endl;
 			}
 		}
-
 	}
-	
-	//set slave false
+
 	status = scSetWorkMode(deviceHandle, SC_ACTIVE_MODE);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetWorkMode failed status:" << status << endl;
-		return -1;
+		cout << "[scSetWorkMode] success, ScStatus(" << status << "). Set SC_ACTIVE_MODE." << endl;
 	}
-	status = scStopStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
+	else
 	{
-		cout << "scStopStream failed status:" <<status<< endl;
+		cout << "[scSetWorkMode] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.close device
-	//2.SDK shutdown
+	status = scStopStream(deviceHandle);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scStopStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
 	status = scCloseDevice(&deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scCloseDevice failed status:" << status << endl;
+		cout << "[scCloseDevice] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
+
 	status = scShutdown();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scShutdown failed status:" << status << endl;
+		cout << "[scShutdown] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "---end---"<< endl;
+	cout << "---End---" << endl;
 
 	return 0;
 }

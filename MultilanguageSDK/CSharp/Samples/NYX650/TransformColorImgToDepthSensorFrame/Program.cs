@@ -58,7 +58,7 @@ namespace TransformColorImgToDepthSensorFrame
             {
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect statu" + pDeviceListInfo[0].status);
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
                     Console.WriteLine("The device state does not support connection." );
                     return;
                 }

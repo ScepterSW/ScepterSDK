@@ -53,7 +53,7 @@ namespace DeviceSetFrameRate
             {
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect statu" + pDeviceListInfo[0].status);
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
                     Console.WriteLine("The device state does not support connection." );
                     return;
                 }
@@ -81,7 +81,13 @@ namespace DeviceSetFrameRate
                 return;
             }
             Console.WriteLine("set frame rate :" + frameRate + " is OK.");
-
+            status = VNAPI.VN_SetWorkMode(deviceHandle, ScWorkMode.SC_ACTIVE_MODE);
+            if (status != ScStatus.SC_OK)
+            {
+                Console.WriteLine("VN_SetWorkMode failed status:" + status);
+                return;
+            }
+            Console.WriteLine("set active mode");
             //Starts capturing the image stream
             status = VNAPI.VN_StartStream(deviceHandle);
             if (status != ScStatus.SC_OK)

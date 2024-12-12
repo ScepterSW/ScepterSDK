@@ -20,6 +20,8 @@
   <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>cv_bridge</build_depend>
+  <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>libpcl-all</build_depend>
 
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
@@ -33,6 +35,8 @@
   <build_export_depend>tf2_geometry_msgs</build_export_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>cv_bridge</build_export_depend>
+  <build_export_depend>libpcl-all-dev</build_export_depend>
+  <build_export_depend>libpcl-all</build_export_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
@@ -47,4 +51,6 @@
   <exec_depend>tf2_geometry_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>libpcl-all-dev</exec_depend>
+  <exec_depend>libpcl-all</exec_depend>
 </package>

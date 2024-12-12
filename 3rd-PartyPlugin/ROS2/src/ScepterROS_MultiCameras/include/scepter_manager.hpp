@@ -51,16 +51,18 @@ public:
     bool shutDownDCAM();
 private:
     static void sigsegv_handler(int sig);
-    bool publicImage(const ScFrameType type, rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr &pub);
+    bool publicImage(const ScFrameReady& psReadFrame);
     void set_sensor_intrinsics();
     void timeout();
 private:
-    sensor_msgs::msg::CameraInfo color_info_, depth_info_, ir_info_, alignedDepth_info_, alignedColor_info_, pointclound2_info_;
+    sensor_msgs::msg::CameraInfo color_info_, depth_info_, ir_info_, alignedDepth_info_, alignedColor_info_, pointclound2_info_, depth2colorpointclound2info;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr color_pub_, depth_pub_, ir_pub_, alignedDepth_pub_, alignedColor_pub_;
-    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr colorinfo_pub_, depthinfo_pub_, irinfo_pub_, alignedDepthinfo_pub_, alignedColorinfo_pub_, pointclound2info_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr colorinfo_pub_, depthinfo_pub_, irinfo_pub_, alignedDepthinfo_pub_, alignedColorinfo_pub_, pointclound2info_pub_, depth2colorpointclound2info_pub_;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointclound2_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr depth2colorpointclound2_pub_;
     rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr parameter_event_sub_;
+    rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameter_callback_handle_;
 
 private:
     std::string camera_ip_;    
@@ -71,6 +73,13 @@ private:
     ScDeviceHandle deviceHandle_;
     ScSensorIntrinsicParameters depth_intrinsics_{}, color_intrinsics_{};
     ScSensorExtrinsicParameters extrinsics_{};
+    bool depthCloudPointFlag_;
+    bool depth2ColorCloudPointFlag_;
+    sensor_msgs::msg::CameraInfo info_msg;
+    ScFrame frameArr[5];
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pubArr[5];
+    rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pubCameraInfoArr[5];
+    sensor_msgs::msg::CameraInfo cameraInfoArr[5];
 };
 
 

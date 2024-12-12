@@ -7,67 +7,83 @@ using namespace std;
 ScDeviceInfo* pDeviceListInfo = NULL;
 ScDeviceHandle deviceHandle = 0;
 
-
 bool InitDevice(const int deviceCount);
 void HotPlugStateCallback(const ScDeviceInfo *pInfo, int status, void *contex);
 
 int main(int argc, char *argv[])
 {
-	uint32_t deviceCount = 0;
+	cout << "---DevHotPlugCallbackC---" << endl;
 
 	ScStatus status = scInitialize();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scInitialize failed status:" <<status << endl;
-		system("pause");
+		cout << "[scInitialize] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
+	uint32_t deviceCount = 0;
 	status = scGetDeviceCount(&deviceCount, 3000);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
-		system("pause");
+		cout << "[scGetDeviceCount] success, ScStatus(" << status << "). The device count is " << deviceCount << endl;
+	}
+	else
+	{
+		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
-		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
 		return -1;
 	}
 
 	if (InitDevice(deviceCount))
 	{
-		status = scSetHotPlugStatusCallback(HotPlugStateCallback, nullptr);;
-		if (status != ScStatus::SC_OK)
+		status = scSetHotPlugStatusCallback(HotPlugStateCallback, nullptr);
+		if (status == ScStatus::SC_OK)
 		{
-			cout << "SetHotPlugStatusCallback failed status:" <<status << endl;
- 		}
-		else
-		{
-			cout <<" wait for hotplug operation "<<endl;
-			// wait for hotplug
+			cout << "[scSetHotPlugStatusCallback] success, ScStatus(" << status << "). Waiting for hotplug operation." << endl;
 			for (;;)
-			{	
+			{
 				this_thread::sleep_for(chrono::seconds(1));
 			}
 		}
-		status = scCloseDevice(&deviceHandle);
-		if (status != ScStatus::SC_OK)
+		else
 		{
-			cout << "CloseDevice failed status:" <<status << endl;
+			cout << "[scSetHotPlugStatusCallback] fail, ScStatus(" << status << ")." << endl;
+		}
+
+		status = scCloseDevice(&deviceHandle);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scCloseDevice] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
 		}
 	}
+
 	status = scShutdown();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "Shutdown failed status:" <<status << endl;
-	} 
- 
-	delete[] pDeviceListInfo;
-	pDeviceListInfo = NULL;
+		cout << "[scShutdown] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
+	}
+
+	if (pDeviceListInfo)
+	{
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
+	}
 
 	return 0;
 }
@@ -78,47 +94,47 @@ bool InitDevice(const int deviceCount)
 	{
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
 	ScStatus status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
 	if (status == ScStatus::SC_OK)
 	{
+		cout << "[scGetDeviceInfoList] success, ScStatus(" << status << ").";
 		if (SC_CONNECTABLE != pDeviceListInfo[0].status)
 		{
-			cout << "connect status: " << pDeviceListInfo[0].status << endl;
-			cout << "The device state does not support connection." << endl;
+			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			return false;
 		}
 	}
 	else
 	{
-		cout << "GetDeviceListInfo failed status:" << status << endl;
+		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		return false;
 	}
-	
-	cout << "serialNumber:" << pDeviceListInfo[0].serialNumber << endl
-	<< "ip:" << pDeviceListInfo[0].ip << endl
-	<< "connectStatus:" << pDeviceListInfo[0].status << endl;
 
-	deviceHandle = 0;
+	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
+		<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
 
 	status = scOpenDeviceBySN(pDeviceListInfo[0].serialNumber, &deviceHandle);
-
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "OpenDevice failed status:" <<status << endl;
+		cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		return false;
 	}
 
-    cout << "scOpenDeviceBySN status :" << status << endl;
-
 	status = scStartStream(deviceHandle);
-
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "StartStream failed status:" <<status << endl;
+		cout << "[scStartStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
 		return false;
 	}
 
@@ -127,17 +143,58 @@ bool InitDevice(const int deviceCount)
 
 void HotPlugStateCallback(const ScDeviceInfo *pInfo, int status, void *contex)
 {
-	cout << "ip " << status << "  " << pInfo->ip << "    " << (status == 0 ? "add" : "remove") << endl;
-	cout << "serialNumber " << status << "  " << pInfo->serialNumber << "    " << (status == 0 ? "add" : "remove") << endl;
-
 	if (status == 0)
 	{
-		cout << "scOpenDevice " << scOpenDeviceBySN(pInfo->serialNumber, &deviceHandle) << endl;
-		cout << "scStartStream " << scStartStream(deviceHandle) << endl;
+		cout << endl << "The device is <Added>, deviceInfo <serialNumber>: " << pInfo->serialNumber
+			<< ", <ip>: " << pInfo->ip << ", <status>: " << pInfo->status << endl;
+
+		ScStatus status = scOpenDeviceBySN(pInfo->serialNumber, &deviceHandle);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
+			return;
+		}
+
+		status = scStartStream(deviceHandle);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scStartStream] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
+			return;
+		}
 	}
 	else
 	{
-		cout << "scStopStream " << scStopStream(deviceHandle) << endl;
-		cout << "scCloseDevice " << scCloseDevice(&deviceHandle) << endl;
+		cout << endl << "The device is <Removed>, deviceInfo <serialNumber>: " << pDeviceListInfo[0].serialNumber
+			<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
+
+		ScStatus status = scStopStream(deviceHandle);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scStopStream] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
+			return;
+		}
+
+		status = scCloseDevice(&deviceHandle);
+		if (status == ScStatus::SC_OK)
+		{
+			cout << "[scCloseDevice] success, ScStatus(" << status << ")." << endl;
+		}
+		else
+		{
+			cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
+			return;
+		}
 	}
 }

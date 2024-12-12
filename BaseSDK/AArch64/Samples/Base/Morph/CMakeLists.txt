@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.5.1)
+set(CMAKE_SKIP_RPATH FALSE)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_SKIP_INSTALL_RPATH_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH "$ORIGIN/:../../Lib:../Lib:")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+add_definitions("-Wall -fPIC")
+
+set(OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../PrecompiledSamples/Morph_Samples")
+
+
+include_directories("../../../Include")
+LINK_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/../../../Lib/")
+
+if(NOT(EXISTS "${OUTPUT_PATH}" AND IS_DIRECTORY "${OUTPUT_PATH}"))
+    file(MAKE_DIRECTORY ${OUTPUT_PATH}) 
+endif()
+
+SET(EXECUTABLE_OUTPUT_PATH "${OUTPUT_PATH}")
+
+add_subdirectory(AIContinuousRunMode)
+add_subdirectory(AIGetFrameAndResultSync)
+add_subdirectory(AISingleRunMode)

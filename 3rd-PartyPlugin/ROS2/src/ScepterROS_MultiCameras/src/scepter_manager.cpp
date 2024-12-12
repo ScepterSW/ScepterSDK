@@ -18,7 +18,9 @@ ScepterManager::ScepterManager(std::string ip, std::string camera_name) :
         color_width_(-1),
         color_height_(-1),
         slope_(1450),
-        deviceHandle_(0)
+        deviceHandle_(0),
+        depthCloudPointFlag_(true),
+        depth2ColorCloudPointFlag_(false)
 {
     signal(SIGSEGV, ScepterManager::sigsegv_handler);
     RCLCPP_INFO(this->get_logger(), "camera_name: %s" , camera_name_.c_str());
@@ -34,14 +36,38 @@ ScepterManager::ScepterManager(std::string ip, std::string camera_name) :
     alignedDepthinfo_pub_ = this->create_publisher<sensor_msgs::msg::CameraInfo>(camera_name_+"/transformedDepth/camera_info", 30);
     alignedColorinfo_pub_ = this->create_publisher<sensor_msgs::msg::CameraInfo>(camera_name_+"/transformedColor/camera_info", 30);
     pointclound2info_pub_ = this->create_publisher<sensor_msgs::msg::CameraInfo>(camera_name_+"/depth/points/camera_info", 30);
+    depth2colorpointclound2info_pub_ = this->create_publisher<sensor_msgs::msg::CameraInfo>(camera_name_+"/depth2color/points/camera_info", 30);
    
     pointclound2_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(camera_name_+"/depth/points", 30);
-
+    depth2colorpointclound2_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(camera_name_+"/depth2color/points", 30);
+    memset(frameArr, 0,sizeof(ScFrame) * 5);
+    pubArr[0] = depth_pub_; pubArr[1] = ir_pub_; pubArr[2] = color_pub_; pubArr[3] = alignedDepth_pub_; pubArr[4] = alignedColor_pub_; 
+    pubCameraInfoArr[0] = depthinfo_pub_; pubCameraInfoArr[1] = irinfo_pub_; pubCameraInfoArr[2] = colorinfo_pub_; pubCameraInfoArr[3] = alignedDepthinfo_pub_; pubCameraInfoArr[4] = alignedColorinfo_pub_;
+    this->declare_parameter<bool>("DepthCloudPointFlag", true);
+    this->declare_parameter<bool>("Depth2ColorCloudPointFlag", false);
     if(initDCAM())
     {
         timer_ = this->create_wall_timer(
           100ms, std::bind(&ScepterManager::timeout, this));
     }
+    parameter_callback_handle_ = this->add_on_set_parameters_callback(
+        [this](const std::vector<rclcpp::Parameter> &params) {
+        rcl_interfaces::msg::SetParametersResult result;
+            result.successful = true;
+            ScStatus status = ScStatus::SC_OK;
+            for (const auto &param : params) {
+                if (param.get_name() == "DepthCloudPointFlag") {
+                    RCLCPP_INFO(this->get_logger(), "%s DepthCloudPointFlag updated: %d", camera_name_.c_str(), param.as_bool());
+                    depthCloudPointFlag_ = param.as_bool();
+                }
+                if (param.get_name() == "Depth2ColorCloudPointFlag") {
+                    RCLCPP_INFO(this->get_logger(), "%s Depth2ColorCloudPointFlag updated: %d", camera_name_.c_str(), param.as_bool());
+                    depth2ColorCloudPointFlag_ = param.as_bool();
+                }
+            }
+            return result;
+        }
+    );
 }
 void ScepterManager::sigsegv_handler(int sig) 
 {
@@ -104,7 +130,21 @@ GET:
         RCLCPP_INFO(this->get_logger(), "scOpenDeviceBySN failed! %d" ,status);
         return false;
     }
- 
+
+    char buffer[2048];
+    getcwd(buffer, sizeof(buffer));
+    string path(buffer);
+    path = path + "/" + camera_name_ + "_parameter.json";
+    status = scSetParamsByJson(deviceHandle_, const_cast<char*>(path.c_str()));
+    if (status != ScStatus::SC_OK)
+    {
+        RCLCPP_INFO(this->get_logger(), "scSetParamsByJson ret %d Please create json file at %s if you need it", status, const_cast<char*>(path.c_str()));
+    }
+    else
+    {
+        RCLCPP_INFO(this->get_logger(),"Successfully load json %s", const_cast<char*>(path.c_str()));
+    }
+
     scStartStream(deviceHandle_);
     
     /* add user define api call start*/
@@ -118,7 +158,7 @@ GET:
     /* add user define api call end*/
  
     set_sensor_intrinsics();
-
+    cameraInfoArr[0] = depth_info_; cameraInfoArr[1] = ir_info_; cameraInfoArr[2] = color_info_; cameraInfoArr[3] = alignedDepth_info_; cameraInfoArr[4] = alignedColor_info_;
     const int BufLen = 64;
     char fw[BufLen] = { 0 };
     scGetFirmwareVersion(deviceHandle_, fw, BufLen);
@@ -139,26 +179,7 @@ void ScepterManager::timeout()
         RCLCPP_INFO(this->get_logger(), "scGetFrameReady failed! %d" ,status);
         return;
     }
-    if (1 == psReadFrame.depth)
-    {
-        publicImage(SC_DEPTH_FRAME, depth_pub_); 
-    }
-    if (1 == psReadFrame.ir)
-    {
-        publicImage(SC_IR_FRAME, ir_pub_);           
-    }
-    if (1 == psReadFrame.color)
-    {
-        publicImage(SC_COLOR_FRAME, color_pub_);           
-    }
-    if (1 == psReadFrame.transformedDepth)
-    {
-        publicImage(SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, alignedDepth_pub_);            
-    }
-    if (1 == psReadFrame.transformedColor)
-    {
-        publicImage(SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME, alignedColor_pub_);            
-    }  
+    publicImage(psReadFrame);
 }
 
 bool ScepterManager::shutDownDCAM()
@@ -187,7 +208,7 @@ bool ScepterManager::shutDownDCAM()
     return bret;
 }
 
-bool ScepterManager::publicImage(const ScFrameType type, rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr &pub)
+bool ScepterManager::publicImage(const ScFrameReady& psReadFrame)
 {    
     std::string camera_frame(this->camera_name_ + "_frame"), 
                 color_frame(this->camera_name_ + "_color_frame"),
@@ -195,101 +216,187 @@ bool ScepterManager::publicImage(const ScFrameType type, rclcpp::Publisher<senso
                 alignedcolor_frame(this->camera_name_ + "_transformedColor_frame"),
                 depth_frame(this->camera_name_ + "_depth_frame"),
                 ir_frame(this->camera_name_ + "_ir_frame"),
-                points_frame(this->camera_name_ + "_points_frame");
+                points_frame(this->camera_name_ + "_points_frame"),
+                depth2colorpoints_frame(this->camera_name_ + "_depth2colorpoints_frame");
     bool ret = false;
-
+    memset(frameArr, 0,sizeof(ScFrame)*5);
     ScFrame frame = {0};
-    scGetFrame(deviceHandle_, type, &frame);
-    
-    if (frame.pFrameData != NULL)
+    if (psReadFrame.depth == 1)
     {
-        int cvMatType = CV_16UC1;
-        std::string imageEncodeType = sensor_msgs::image_encodings::TYPE_16UC1;
-        switch (type)
+        scGetFrame(deviceHandle_, SC_DEPTH_FRAME, &frame);
+        memcpy(&frameArr[0], &frame, sizeof(ScFrame));   
+    }
+    if (psReadFrame.ir == 1)
+    {
+        scGetFrame(deviceHandle_, SC_IR_FRAME, &frame);
+        memcpy(&frameArr[1], &frame, sizeof(ScFrame));  
+    }
+    if (psReadFrame.color == 1)
+    {
+        scGetFrame(deviceHandle_, SC_COLOR_FRAME, &frame);
+        memcpy(&frameArr[2], &frame, sizeof(ScFrame));  
+    }
+    if (psReadFrame.transformedDepth == 1)
+    {
+        scGetFrame(deviceHandle_, SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, &frame);
+        memcpy(&frameArr[3], &frame, sizeof(ScFrame));  
+    }
+    if (psReadFrame.transformedColor == 1)
+    {
+        scGetFrame(deviceHandle_, SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME, &frame);
+        memcpy(&frameArr[4], &frame, sizeof(ScFrame));  
+    }
+    for (int i = 0; i < 5; i++)
+    {
+        frame = frameArr[i];
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr &pub = pubArr[i];
+        rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr &pubCameraInfo = pubCameraInfoArr[i];
+        sensor_msgs::msg::CameraInfo& cameraInfo = cameraInfoArr[i];
+        ScFrameType type = frame.frameType;
+        if (frame.pFrameData != NULL)
         {
-        case SC_IR_FRAME:
-        {
-            cvMatType = CV_8UC1;
-            imageEncodeType = sensor_msgs::image_encodings::TYPE_8UC1;
-            cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
-            cv_bridge::CvImage cvi_;
-            cvi_.header.stamp = rclcpp::Clock().now();
-            cvi_.header.frame_id = ir_frame;
-            cvi_.encoding = "8UC1";
-            cvi_.image = mat;
-            sensor_msgs::msg::Image im_msg;
-            cvi_.toImageMsg(im_msg);
-            pub->publish(im_msg);
-            ret = true;
-        }
-            break;
-        case SC_DEPTH_FRAME:
-        {
-            ScFrame &srcFrame = frame;
-            const int len = srcFrame.width * srcFrame.height;
-            ScVector3f* worldV = new ScVector3f[len];
-            scConvertDepthFrameToPointCloudVector(deviceHandle_, &srcFrame, worldV); //Convert Depth frame to World vectors.
-
-            sensor_msgs::msg::PointCloud2 output_msg;
-            pcl::PointCloud<pcl::PointXYZRGB> cloud;
-            cloud.points.resize(len);
-            for (int i = 0; i < len; i++)
-            { 
-                if (0 != worldV[i].z && worldV[i].z !=65535)
-                {
-                    cloud.points[i].x = worldV[i].x/1000;
-                    cloud.points[i].y = worldV[i].y/1000;
-                    cloud.points[i].z = worldV[i].z/1000;
-                    cloud.points[i].r = 255;
-                    cloud.points[i].g = 255;
-                    cloud.points[i].b = 255;
-                  
-                }
+            int cvMatType = CV_16UC1;
+            std::string imageEncodeType = sensor_msgs::image_encodings::TYPE_16UC1;
+            switch (type)
+            {
+            case SC_IR_FRAME:
+            {
+                cvMatType = CV_8UC1;
+                imageEncodeType = sensor_msgs::image_encodings::TYPE_8UC1;
+                cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
+                cv_bridge::CvImage cvi_;
+                cvi_.header.stamp = rclcpp::Clock().now();
+                cvi_.header.frame_id = ir_frame;
+                cvi_.encoding = "8UC1";
+                cvi_.image = mat;
+                sensor_msgs::msg::Image im_msg;
+                cvi_.toImageMsg(im_msg);
+                pub->publish(im_msg);
+                pubCameraInfo->publish(cameraInfo);
+                ret = true;
             }
-            delete [] worldV;
-            pcl::toROSMsg(cloud, output_msg);
-            output_msg.header.frame_id=points_frame;
-            output_msg.header.stamp = rclcpp::Clock().now();
-            pointclound2_pub_->publish(output_msg);
-        }
-        case SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME:
-        {
-            cvMatType = CV_16UC1;
-            imageEncodeType = sensor_msgs::image_encodings::TYPE_16UC1;
-            cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
-            cv_bridge::CvImage cvi_;
-            cvi_.header.stamp = rclcpp::Clock().now();
-            cvi_.header.frame_id = depth_frame;
-            cvi_.encoding = "16UC1";
-            cvi_.image = mat;
-            sensor_msgs::msg::Image im_msg;     
-            cvi_.toImageMsg(im_msg);
-            pub->publish(im_msg);
-            ret = true;
-        }
-            break;
-        case SC_COLOR_FRAME:
-        case SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME:
-        {
-            cvMatType = CV_8UC3;
-            imageEncodeType = sensor_msgs::image_encodings::BGR8;
-            cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
-            cv_bridge::CvImage cvi_;
-            cvi_.header.stamp = rclcpp::Clock().now();
-            cvi_.header.frame_id = color_frame;
-            cvi_.encoding = "bgr8";
-            cvi_.image = mat;
-            sensor_msgs::msg::Image im_msg;
-            cvi_.toImageMsg(im_msg);
-            pub->publish(im_msg);
-            ret = true;
-        }    
-            break;
-        default:
-            ret = false;
-            break;
-        }
+                break;
+            case SC_DEPTH_FRAME:
+            {
+                cvMatType = CV_16UC1;
+                imageEncodeType = sensor_msgs::image_encodings::TYPE_16UC1;
+                cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
+                cv_bridge::CvImage cvi_;
+                cvi_.header.stamp = rclcpp::Clock().now();
+                cvi_.header.frame_id = depth_frame;
+                cvi_.encoding = "16UC1";
+                cvi_.image = mat;
+                sensor_msgs::msg::Image im_msg;     
+                cvi_.toImageMsg(im_msg);
+                pub->publish(im_msg);
+                pubCameraInfo->publish(cameraInfo);
+                if(depthCloudPointFlag_ == true) {
+                    ScFrame &srcFrame = frame;
+                    const int len = srcFrame.width * srcFrame.height;
+                    ScVector3f* worldV = new ScVector3f[len];
+                    scConvertDepthFrameToPointCloudVector(deviceHandle_, &srcFrame, worldV); //Convert Depth frame to World vectors.
 
+                    sensor_msgs::msg::PointCloud2 output_msg;
+                    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+                    cloud.points.resize(len);
+                    for (int i = 0; i < len; i++)
+                    { 
+                        if (0 != worldV[i].z && worldV[i].z !=65535)
+                        {
+                            cloud.points[i].x = worldV[i].x/1000;
+                            cloud.points[i].y = worldV[i].y/1000;
+                            cloud.points[i].z = worldV[i].z/1000;
+                            cloud.points[i].r = 255;
+                            cloud.points[i].g = 255;
+                            cloud.points[i].b = 255;
+                        
+                        }
+                    }
+                    delete [] worldV;
+                    pcl::toROSMsg(cloud, output_msg);
+                    output_msg.header.frame_id=points_frame;
+                    output_msg.header.stamp = rclcpp::Clock().now();
+                    pointclound2_pub_->publish(output_msg);
+                    pointclound2info_pub_->publish(pointclound2_info_);
+                }
+                ret = true;
+            }
+            break;
+            case SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME:
+            {
+                cvMatType = CV_16UC1;
+                imageEncodeType = sensor_msgs::image_encodings::TYPE_16UC1;
+                cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
+                cv_bridge::CvImage cvi_;
+                cvi_.header.stamp = rclcpp::Clock().now();
+                cvi_.header.frame_id = depth_frame;
+                cvi_.encoding = "16UC1";
+                cvi_.image = mat;
+                sensor_msgs::msg::Image im_msg;     
+                cvi_.toImageMsg(im_msg);
+                pub->publish(im_msg);
+                pubCameraInfo->publish(cameraInfo);
+                if(depth2ColorCloudPointFlag_ == true)
+                {
+                    const int len = frame.width * frame.height;
+                    ScVector3f* worldV = new ScVector3f[len];
+                    scConvertDepthFrameToPointCloudVector(deviceHandle_, &frame, worldV);
+                    sensor_msgs::msg::PointCloud2 output_msg;
+                    pcl::PointCloud<pcl::PointXYZRGB> cloud;
+                    cloud.points.resize(len);
+                    cvMatType = CV_8UC3;
+                    imageEncodeType = sensor_msgs::image_encodings::BGR8;
+                    cv::Mat mat = cv::Mat(frameArr[2].height, frameArr[2].width, cvMatType, frameArr[2].pFrameData);
+                    for (int i = 0; i < len; i++)
+                    { 
+                        int row = (i / mat.cols);
+                        int col = (i % mat.cols);
+                        uchar* data = mat.ptr<uchar>(row); // bgr == 1 col
+                        if (0 != worldV[i].z && worldV[i].z !=65535)
+                        {
+                            cloud.points[i].x = worldV[i].x/1000;
+                            cloud.points[i].y = worldV[i].y/1000;
+                            cloud.points[i].z = worldV[i].z/1000;
+                            cloud.points[i].r = data[3*col + 2];
+                            cloud.points[i].g = data[3*col + 1];
+                            cloud.points[i].b = data[3*col];
+                        
+                        }
+                    }
+                    delete [] worldV;
+                    pcl::toROSMsg(cloud, output_msg);
+                    output_msg.header.frame_id=depth2colorpoints_frame;
+                    output_msg.header.stamp = rclcpp::Clock().now();
+                    depth2colorpointclound2_pub_->publish(output_msg);
+                    depth2colorpointclound2info_pub_->publish(depth2colorpointclound2info);
+                }
+                ret = true;
+            }
+                break;
+            case SC_COLOR_FRAME:
+            case SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME:
+            {
+                cvMatType = CV_8UC3;
+                imageEncodeType = sensor_msgs::image_encodings::BGR8;
+                cv::Mat mat = cv::Mat(frame.height, frame.width, cvMatType, frame.pFrameData);
+                cv_bridge::CvImage cvi_;
+                cvi_.header.stamp = rclcpp::Clock().now();
+                cvi_.header.frame_id = color_frame;
+                cvi_.encoding = "bgr8";
+                cvi_.image = mat;
+                sensor_msgs::msg::Image im_msg;
+                cvi_.toImageMsg(im_msg);
+                pub->publish(im_msg);
+                pubCameraInfo->publish(cameraInfo);
+                ret = true;
+            }    
+                break;
+            default:
+                ret = false;
+                break;
+            }
+
+        }
     }
 
     return ret;
@@ -303,7 +410,8 @@ void ScepterManager::set_sensor_intrinsics()
                 alignedcolor_frame(this->camera_name_ + "_transformedColor_frame"),
                 depth_frame(this->camera_name_ + "_depth_frame"),
                 ir_frame(this->camera_name_ + "_ir_frame"),
-                points_frame(this->camera_name_ + "_points_frame");
+                points_frame(this->camera_name_ + "_points_frame"),
+                depth2colorpoints_frame(this->camera_name_ + "_depth2colorpoints_frame");
 
     // Get camera parameters (extrinsic)
     scGetSensorExtrinsicParameters(deviceHandle_, &this->extrinsics_);
@@ -328,6 +436,10 @@ void ScepterManager::set_sensor_intrinsics()
 
     msg.header.frame_id = camera_frame;
     msg.child_frame_id = points_frame;
+    tf_broadcaster.sendTransform(msg);
+
+    msg.header.frame_id = camera_frame;
+    msg.child_frame_id = depth2colorpoints_frame;
     tf_broadcaster.sendTransform(msg);
 
     msg.header.frame_id = camera_frame;
@@ -362,7 +474,6 @@ void ScepterManager::set_sensor_intrinsics()
     scGetSensorIntrinsicParameters(deviceHandle_, SC_COLOR_SENSOR, &this->color_intrinsics_);
 
     // Initialise camera info messages
-    sensor_msgs::msg::CameraInfo info_msg;
     info_msg.distortion_model = "plumb_bob";
     info_msg.header.frame_id = color_frame;
     info_msg.d = {color_intrinsics_.k1, color_intrinsics_.k2, color_intrinsics_.p1, color_intrinsics_.p2,
@@ -380,6 +491,12 @@ void ScepterManager::set_sensor_intrinsics()
     info_msg.r[8] = 1;
     color_info_=info_msg;
     alignedDepth_info_=info_msg;
+    colorinfo_pub_->publish(color_info_);
+    alignedDepthinfo_pub_->publish(alignedDepth_info_);
+
+    info_msg.header.frame_id = depth2colorpoints_frame;
+    depth2colorpointclound2info = info_msg;
+    depth2colorpointclound2info_pub_->publish(depth2colorpointclound2info);
 
     info_msg.header.frame_id = depth_frame;
     info_msg.d = {depth_intrinsics_.k1, depth_intrinsics_.k2, depth_intrinsics_.p1, depth_intrinsics_.p2,
@@ -397,11 +514,9 @@ void ScepterManager::set_sensor_intrinsics()
 
     info_msg.header.frame_id = ir_frame;
     ir_info_=info_msg;
-    colorinfo_pub_->publish(color_info_);
     depthinfo_pub_->publish(depth_info_);
     irinfo_pub_->publish(ir_info_);
     alignedColorinfo_pub_->publish(alignedColor_info_);
-    alignedDepthinfo_pub_->publish(alignedDepth_info_);
     
     info_msg.header.frame_id = points_frame;
     pointclound2_info_ = info_msg;

@@ -1,6 +1,9 @@
 ﻿from pickle import FALSE, TRUE
 import sys
-sys.path.append('../../../')
+currentPath =  sys.path[0]
+pos = currentPath.find('Samples')
+libpath = currentPath[:pos]
+sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
@@ -28,7 +31,7 @@ else:
     exit()
 
 if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-	print("connect statu:",device_info.status)  
+	print("connect status:",device_info.status)  
 	print("Call scOpenDeviceBySN with connect status :",ScConnectStatus.SC_CONNECTABLE.value)
 	exit()
 else:
@@ -111,7 +114,7 @@ print("Recommended scope: 100 - " + str(exposureTime))
 
 print("* step2. Set and Get new Auto Max Color exposure time range *" )
 '''set new range of Auto Color exposure time.[100 maxExposureTime.exposureTime]'''
-ret = camera.scSetAutoExposureTime(10000)
+ret = camera.scSetColorAECMaxExposureTime(10000)
 if 0 != ret:
     print("scSetExposureTimeAutoMax failed status:" + str(ret))
     exit()
@@ -119,7 +122,7 @@ else:
     print("SetExposureTimeAutoMax:10000")
 
 '''Get the new range of the Auto Color exposure time. '''
-ret, params = camera.scGetAutoExposureTime();
+ret, params = camera.scGetColorAECMaxExposureTime();
 if 0 != ret:
     print("scGetExposureTimeAutoMax failed status:" + str(ret))
     exit()

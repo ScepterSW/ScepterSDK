@@ -1,6 +1,9 @@
 from pickle import FALSE, TRUE
 import sys
-sys.path.append('../../../')
+currentPath =  sys.path[0]
+pos = currentPath.find('Samples')
+libpath = currentPath[:pos]
+sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
@@ -28,7 +31,7 @@ else:
     exit()
 
 if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-	print("connect statu:",device_info.status)  
+	print("connect status:",device_info.status)  
 	print("Call scOpenDeviceBySN with connect status :",ScConnectStatus.SC_CONNECTABLE.value)
 	exit()
 else:
@@ -61,7 +64,7 @@ for i in range(30):
     if  ret != 0:  
         print("scSoftwareTriggerOnce failed status:",ret)
 
-    ret, frameready = camera.scGetFrameReady(c_uint16(1200))
+    ret, frameready = camera.scGetFrameReady(c_uint16(15000))
     if  ret !=0:
         print("scGetFrameReady failed status:",ret)
         continue       

@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11 CMakeFiles/MultiConnection.dir/MultiConnection.cpp.o -o /home/peter/work/ScepterSDK/BaseSDK/Ubuntu18.04/PrecompiledSamples/NYX650_Samples/MultiConnection   -L/home/peter/work/ScepterSDK/BaseSDK/Ubuntu18.04/Samples/Base/NYX650/../../../Lib  -Wl,-rpath,"\$ORIGIN/:../../Lib:../Lib:" -lScepter_api 

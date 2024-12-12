@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11 CMakeFiles/DeviceSWTriggerMode.dir/DeviceSWTriggerMode.cpp.o -o /home/peter/work/ScepterSDK/BaseSDK/Ubuntu18.04/PrecompiledSamples/NYX650_Samples/DeviceSWTriggerMode   -L/home/peter/work/ScepterSDK/BaseSDK/Ubuntu18.04/Samples/Base/NYX650/../../../Lib  -Wl,-rpath,"\$ORIGIN/:../../Lib:../Lib:" -lScepter_api 

@@ -1,6 +1,9 @@
 from pickle import FALSE, TRUE
 import sys
-sys.path.append('../../../')
+currentPath =  sys.path[0]
+pos = currentPath.find('Samples')
+libpath = currentPath[:pos]
+sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time

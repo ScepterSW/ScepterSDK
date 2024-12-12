@@ -72,7 +72,7 @@ typedef enum
     SC_UPGRADE_CALLBACK_NOT_SET     = -19,    //!< scSetUpgradeStatusCallback is not called.
     SC_PRODUCT_NOT_SUPPORT          = -20,    //!< The current product does not support this operation.
     SC_NO_CONFIG_FOLDER             = -21,    //!< No product profile found.
-    SC_WEB_SERVER_START_ERROR       = -22,    //!< WebServer Start/Restart error(IP or PORT).
+    SC_WEB_SERVER_START_ERROR       = -22,    //!< WebServer Start/Restart error(IP or PORT 8080).
     SC_GET_OVER_STAY_FRAME          = -23,    //!< The time from frame ready to get frame is out of 1s.
     SC_CREATE_LOG_DIR_ERROR         = -24,    //!< Create log directory error.
     SC_CREATE_LOG_FILE_ERROR        = -25,    //!< Create log file error.
@@ -88,6 +88,9 @@ typedef enum
     SC_NOT_FIND_DRIVERS_FOLDER      = -109,   //!< Please check whether the Drivers directory exists.
     SC_CAMERA_OPENING               = -110,   //!< The camera is openin,by another Sc_OpenDeviceByXXX API.
     SC_CAMERA_OPENED_BY_ANOTHER_APP = -111,   //!< The camera has been opened by another APP.
+    SC_GET_AI_RESULT_TIME_OUT       = -112,   //!< Capture the next AI result time out.
+    SC_MORPH_AI_LIB_ERROR           = -113,   //!< The morph Al library is not exist or initialized failed.
+    SC_CPU_AFFINITY_CHECK_FAILED    = -114,   //!< The cpu affinity config file check failed
 
     SC_OTHERS                       = -255,   //!< An unknown error occurred.
 } ScStatus;

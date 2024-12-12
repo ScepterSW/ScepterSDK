@@ -1,43 +1,42 @@
 ﻿#include <thread>
 #include <iostream>
 #include "Scepter_api.h"
-#define frameSpace 10
+
 using namespace std;
 
 int main()
 {
-	cout << "---ColorExposureTimeSetGet---"<< endl;
+	cout << "---ColorExposureTimeSetGet---" << endl;
 
-	//about dev
 	uint32_t deviceCount;
 	ScDeviceInfo* pDeviceListInfo = NULL;
 	ScDeviceHandle deviceHandle = 0;
 	ScStatus status = SC_OTHERS;
 
-	//SDK Initialize
 	status = scInitialize();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scInitialize failed status:" <<status << endl;
-		system("pause");
+		cout << "[scInitialize] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.Search and notice the count of devices.
-	//2.get infomation of the devices. 
-	//3.open devices accroding to the info.
 	status = scGetDeviceCount(&deviceCount, 3000);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetDeviceCount failed! make sure pointer valid or called scInitialize()" << endl;
-		system("pause");
+		cout << "[scGetDeviceCount] success, ScStatus(" << status << "). The device count is " << deviceCount << endl;
+	}
+	else
+	{
+		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
-		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
 		return -1;
 	}
 
@@ -45,200 +44,219 @@ int main()
 	status = scGetDeviceInfoList(deviceCount, pDeviceListInfo);
 	if (status == ScStatus::SC_OK)
 	{
+		cout << "[scGetDeviceInfoList] success, ScStatus(" << status << ").";
 		if (SC_CONNECTABLE != pDeviceListInfo[0].status)
 		{
-			cout << "connect status: " << pDeviceListInfo[0].status << endl;
-			cout << "The device state does not support connection."<< endl;
+			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
+			delete[] pDeviceListInfo;
+			pDeviceListInfo = NULL;
 			return -1;
 		}
 	}
 	else
 	{
-		cout << "GetDeviceListInfo failed status:" << status << endl;
+		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 		return -1;
 	}
 
-	cout << "serialNumber:" << pDeviceListInfo[0].serialNumber << endl
-	<< "ip:" << pDeviceListInfo[0].ip << endl
-	<< "connectStatus:" << pDeviceListInfo[0].status << endl;
+	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
+		<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
 
 	status = scOpenDeviceBySN(pDeviceListInfo[0].serialNumber, &deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "OpenDevice failed status:" <<status << endl;
-		return false;
+		cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 	}
-
-    cout << "scOpenDeviceBySN status :" << status << endl;
-
-	//Starts capturing the image stream
-	status = scStartStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
+	else
 	{
-		cout << "scStartStream failed status:" <<status<< endl;
+		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
+		delete[] pDeviceListInfo;
+		pDeviceListInfo = NULL;
 		return -1;
 	}
-	//Get default frame rate
+
+	status = scStartStream(deviceHandle);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scStartStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
 	int rate = 10;
 	status = scGetFrameRate(deviceHandle, &rate);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetFrameRate failed status:" << status << endl;
-		return -1;
-	}
-	// if need change the framerate, do first 
-	/*
-	rate = 5;
-	scSetFrameRate(deviceHandle, rate);
-	*/
-	cout << endl << "---- To  SC_EXPOSURE_CONTROL_MODE_MANUAL ----" << endl;
-	//switch exposure mode to manual
-	status = scSetExposureControlMode(deviceHandle, SC_COLOR_SENSOR, SC_EXPOSURE_CONTROL_MODE_MANUAL);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scSetExposureControlMode failed status:" <<status<< endl;
-		return -1;
+		cout << "[scGetFrameRate] success, ScStatus(" << status << "). The device frame rate is " << rate << endl;
 	}
 	else
 	{
-		cout << "scSetExposureControlMode  ok" << endl;
+		cout << "[scGetFrameRate] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
 
-	
-	cout << "* step1. Get Color exposure time range with frameRate " << rate <<"*" << endl;
- 	//Get the range of the Color exposure time 
+	cout << endl << "---To SC_EXPOSURE_CONTROL_MODE_MANUAL---" << endl;
+	status = scSetExposureControlMode(deviceHandle, SC_COLOR_SENSOR, SC_EXPOSURE_CONTROL_MODE_MANUAL);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scSetExposureControlMode] success, ScStatus(" << status << "). Set SC_EXPOSURE_CONTROL_MODE_MANUAL success." << endl;
+	}
+	else
+	{
+		cout << "[scSetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
+	cout << "---1. Get color sensor exposure time range with frame rate " << rate << "---" << endl;
 	int maxExposureTime = 0;
 	status = scGetMaxExposureTime(deviceHandle, SC_COLOR_SENSOR, &maxExposureTime);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetMaxExposureTime failed status:" << status << endl;
-		return -1;
-	}
-	cout << "Recommended scope: 100 - " << maxExposureTime << endl;
-
-	cout << "* step2. Set and Get new ExposureTime *" << endl;
-	//Set new ExposureTime
-	int exposureTime = 3000;
-	status = scSetExposureTime(deviceHandle, SC_COLOR_SENSOR, exposureTime);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scSetExposureTime failed status:" <<status<< endl;
-		return -1;
+		cout << "[scGetMaxExposureTime] success, ScStatus(" << status << "). Recommended scope: 100 - " << maxExposureTime << endl;
 	}
 	else
 	{
-		cout << "SetExposureTime:"<< exposureTime << endl;
+		cout << "[scGetMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
+	cout << "---2. Set and get color sensor new exposure time---" << endl;
+	int exposureTime = 3000;
+	status = scSetExposureTime(deviceHandle, SC_COLOR_SENSOR, exposureTime);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scSetExposureTime] success, ScStatus(" << status << "). Set the device exposure time to " << exposureTime << endl;
+	}
+	else
+	{
+		cout << "[scSetExposureTime] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
 
 	status = scGetExposureTime(deviceHandle, SC_COLOR_SENSOR, &exposureTime);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetExposureTime failed status:" <<status<< endl;
-		return -1;
+		cout << "[scGetExposureTime] success, ScStatus(" << status << "). The device exposure time is " << exposureTime << endl;
 	}
 	else
 	{
-		cout << "GetExposureTime:"<< exposureTime << endl;
+		cout << "[scGetExposureTime] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
-	
-	cout << "* Set and Get ColorGain *" << endl;
-	//set new ColorGain
+
 	float colorGain = 3.5;
 	status = scSetColorGain(deviceHandle, colorGain);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetColorGain failed status:" << status << endl;
-		return -1;
+		cout << "[scSetColorGain] success, ScStatus(" << status << "). Set the device color gain to " << colorGain << endl;
 	}
 	else
 	{
-		cout << "SetColorGain:" << colorGain << endl;
+		cout << "[scSetColorGain] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
+
 	colorGain = 0.0;
 	status = scGetColorGain(deviceHandle, &colorGain);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetColorGain failed status:" << status << endl;
-		return -1;
+		cout << "[scGetColorGain] success, ScStatus(" << status << "). The device color gain is " << colorGain << endl;
 	}
 	else
 	{
-		cout << "GetColorGain:" << colorGain << endl;
-	}
-		
-	cout << endl << "---- To SC_EXPOSURE_CONTROL_MODE_AUTO ----" << endl;	
-	//switch exposure mode to auto
-	status = scSetExposureControlMode(deviceHandle, SC_COLOR_SENSOR, SC_EXPOSURE_CONTROL_MODE_AUTO);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scSetExposureControlMode failed status:" <<status<< endl;
+		cout << "[scGetColorGain] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	else
-	{
-		cout << "scSetExposureControlMode ok" << endl;
-	}
-	
-	cout << "* step1. Get Color exposure time range *" << endl;
-	//Get the range of the Auto Color exposure time 
-	status = scGetMaxExposureTime(deviceHandle, SC_COLOR_SENSOR, &maxExposureTime);
-	if (status != ScStatus::SC_OK)
-	{
-		cout << "scGetMaxExposureTime failed status:" << status << endl;
-		return -1;
-	}
-	cout << "Recommended scope: 100 - " << maxExposureTime << endl;
 
-	cout << "* step2. Set and Get new Auto Max Color exposure time range *" << endl;
-	//set new range of Auto Color exposure time. [100  maxExposureTime]
+	cout << endl << "---To SC_EXPOSURE_CONTROL_MODE_AUTO---" << endl;
+	status = scSetExposureControlMode(deviceHandle, SC_COLOR_SENSOR, SC_EXPOSURE_CONTROL_MODE_AUTO);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scSetExposureControlMode] success, ScStatus(" << status << "). Set SC_EXPOSURE_CONTROL_MODE_AUTO success." << endl;
+	}
+	else
+	{
+		cout << "[scSetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
+	cout << "---1. Get color exposure time range---" << endl;
+	status = scGetMaxExposureTime(deviceHandle, SC_COLOR_SENSOR, &maxExposureTime);
+	if (status == ScStatus::SC_OK)
+	{
+		cout << "[scGetMaxExposureTime] success, ScStatus(" << status << "). Recommended scope: 100 - " << maxExposureTime << endl;
+	}
+	else
+	{
+		cout << "[scGetMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
+		return -1;
+	}
+
+	cout << "---2. Set and get color sensor new max exposure time range in auto mode---" << endl;
 	int AECMaxExposureTime = 3000;
 	status = scSetColorAECMaxExposureTime(deviceHandle, AECMaxExposureTime);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scSetColorAECMaxExposureTime failed status:" << status << endl;
-		return -1;
+		cout << "[scSetColorAECMaxExposureTime] success, ScStatus(" << status << "). Set color AEC max exposure time to " << AECMaxExposureTime << endl;
 	}
 	else
 	{
-		cout << "scSetColorAECMaxExposureTime:" << AECMaxExposureTime << endl;
+		cout << "[scSetColorAECMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
 
-	//Get the new range of the Auto Color exposure time .
 	status = scGetColorAECMaxExposureTime(deviceHandle, &AECMaxExposureTime);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scGetColorAECMaxExposureTime failed status:" << status << endl;
-		return -1;
+		cout << "[scGetColorAECMaxExposureTime] success, ScStatus(" << status << "). Get color AEC max exposure time is " << AECMaxExposureTime << endl;
 	}
 	else
 	{
-		cout << "scGetColorAECMaxExposureTime:" << AECMaxExposureTime << endl;
+		cout << "[scGetColorAECMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
+		return -1;
 	}
+	cout << endl;
 
-
-	//Stop capturing the image stream
 	status = scStopStream(deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scStopStream failed status:" <<status<< endl;
+		cout << "[scStopStream] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
 
-	//1.close device
-	//2.SDK shutdown
 	status = scCloseDevice(&deviceHandle);
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scCloseDevice failed status:" <<status<< endl;
+		cout << "[scCloseDevice] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
+
 	status = scShutdown();
-	if (status != ScStatus::SC_OK)
+	if (status == ScStatus::SC_OK)
 	{
-		cout << "scShutdown failed status:" <<status<< endl;
+		cout << "[scShutdown] success, ScStatus(" << status << ")." << endl;
+	}
+	else
+	{
+		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
 		return -1;
 	}
-	cout<< "---end---"<< endl;
+	cout << "---End---" << endl;
 
 	return 0;
 }

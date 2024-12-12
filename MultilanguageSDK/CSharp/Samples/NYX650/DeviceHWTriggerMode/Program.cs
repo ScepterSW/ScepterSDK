@@ -58,7 +58,7 @@ namespace DeviceHWTriggerMode
             {
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect statu" + pDeviceListInfo[0].status);
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
                     Console.WriteLine("The device state does not support connection." );
                     return;
                 }
@@ -82,7 +82,7 @@ namespace DeviceHWTriggerMode
 
             Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
 
-            //set slave true
+            //Set work mode as hardware trigger, HDR and WDR functions need to be turned off in advance.
             status = VNAPI.VN_SetWorkMode(deviceHandle, ScWorkMode.SC_HARDWARE_TRIGGER_MODE);
             if (status != ScStatus.SC_OK)
             {

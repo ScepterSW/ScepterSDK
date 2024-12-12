@@ -1,6 +1,9 @@
 from pickle import FALSE, TRUE
 import sys
-sys.path.append('../../../')
+currentPath =  sys.path[0]
+pos = currentPath.find('Samples')
+libpath = currentPath[:pos]
+sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
@@ -29,7 +32,7 @@ else:
     exit()
 
 if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-	print("connect statu:",device_info.status)  
+	print("connect status:",device_info.status)  
 	print("Call scOpenDeviceBySN with connect status :",ScConnectStatus.SC_CONNECTABLE.value)
 	exit()
 else:
@@ -64,7 +67,7 @@ for i in range(frameSpace):
         continue       
     
     if  frameready.color:      
-        ret,frame = camera.scGetFrame(ScFrameType.SC_COLOR_FRAMEE)
+        ret,frame = camera.scGetFrame(ScFrameType.SC_COLOR_FRAME)
         if  ret == 0:
             if frame.width == 640 and frame.height == 480:
                 print( "scGetFrame status:" , ret, " resolution: ", frame.width  ,"x",frame.height)
@@ -87,7 +90,7 @@ for i in range(frameSpace):
         continue       
     
     if  frameready.color:      
-        ret,frame = camera.scGetFrame(ScFrameType.SC_COLOR_FRAMEE)
+        ret,frame = camera.scGetFrame(ScFrameType.SC_COLOR_FRAME)
         if  ret == 0:
             if frame.width == 1600 and frame.height == 1200:
                 print( "scGetFrame status:" , ret, " resolution: ", frame.width  ,"x",frame.height)

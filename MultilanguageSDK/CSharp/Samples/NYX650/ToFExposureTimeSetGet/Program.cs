@@ -53,7 +53,7 @@ namespace ToFExposureTimeSetGet
             {
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect statu" + pDeviceListInfo[0].status);
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
                     Console.WriteLine("The device state does not support connection." );
                     return;
                 }
@@ -85,6 +85,7 @@ namespace ToFExposureTimeSetGet
                 return;
             }
 
+            //Testing TOF exposure time requires turning off HDR and WDR in advance.
             //1.Default FrameRate
             //2.Set new ExposureTime
             //3.Change FrameRate to 5 (The exposure time ranges are different at different frame rates)

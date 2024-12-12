@@ -33,7 +33,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiConnectionInMultiThrea
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PointCloudVectorAndSave", "PointCloudVectorAndSave\PointCloudVectorAndSave.vcxproj", "{CE070792-D757-4880-85AC-CB692E7B9DA9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeviceStartStopStreaming", "DeviceStartStopStreaming\DeviceStartStopSteaming.vcxproj", "{C3A7256B-066F-45BA-99C2-87F771CC2C0F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeviceStartStopStreaming", "DeviceStartStopStreaming\DeviceStartStopStreaming.vcxproj", "{C3A7256B-066F-45BA-99C2-87F771CC2C0F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ToFFiltersSetGet", "ToFFiltersSetGet\ToFFiltersSetGet.vcxproj", "{46ED4BB9-D36C-4457-9D86-0ABB9FEAD84D}"
 EndProject
@@ -42,6 +42,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeviceSetParamsByJson", "DeviceSetParamsByJson\DeviceSetParamsByJson.vcxproj", "{B6EDFEA8-BB74-4E75-8A6E-09B26C7A6395}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SingleFrameDelayTest", "SingleFrameDelayTest\SingleFrameDelayTest.vcxproj", "{D956D5AF-C3D0-4B54-986B-C2646336760B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeviceIPAndSubnetMaskSet", "DeviceIPAndSubnetMaskSet\DeviceIPAndSubnetMaskSet.vcxproj", "{00000C71-0000-0000-0000-000000000000}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeviceUpgradeFirmWare", "DeviceUpgradeFirmWare\DeviceUpgradeFirmWare.vcxproj", "{0000000D-0000-0000-0000-000000000000}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -211,6 +215,22 @@ Global
 		{D956D5AF-C3D0-4B54-986B-C2646336760B}.Release|x64.Build.0 = Release|x64
 		{D956D5AF-C3D0-4B54-986B-C2646336760B}.Release|x86.ActiveCfg = Release|Win32
 		{D956D5AF-C3D0-4B54-986B-C2646336760B}.Release|x86.Build.0 = Release|Win32
+		{00000C71-0000-0000-0000-000000000000}.Debug|x64.ActiveCfg = Debug|x64
+		{00000C71-0000-0000-0000-000000000000}.Debug|x64.Build.0 = Debug|x64
+		{00000C71-0000-0000-0000-000000000000}.Debug|x86.ActiveCfg = Debug|Win32
+		{00000C71-0000-0000-0000-000000000000}.Debug|x86.Build.0 = Debug|Win32
+		{00000C71-0000-0000-0000-000000000000}.Release|x64.ActiveCfg = Release|x64
+		{00000C71-0000-0000-0000-000000000000}.Release|x64.Build.0 = Release|x64
+		{00000C71-0000-0000-0000-000000000000}.Release|x86.ActiveCfg = Release|Win32
+		{00000C71-0000-0000-0000-000000000000}.Release|x86.Build.0 = Release|Win32
+		{0000000D-0000-0000-0000-000000000000}.Debug|x64.ActiveCfg = Debug|x64
+		{0000000D-0000-0000-0000-000000000000}.Debug|x64.Build.0 = Debug|x64
+		{0000000D-0000-0000-0000-000000000000}.Debug|x86.ActiveCfg = Debug|Win32
+		{0000000D-0000-0000-0000-000000000000}.Debug|x86.Build.0 = Debug|Win32
+		{0000000D-0000-0000-0000-000000000000}.Release|x64.ActiveCfg = Release|x64
+		{0000000D-0000-0000-0000-000000000000}.Release|x64.Build.0 = Release|x64
+		{0000000D-0000-0000-0000-000000000000}.Release|x86.ActiveCfg = Release|Win32
+		{0000000D-0000-0000-0000-000000000000}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

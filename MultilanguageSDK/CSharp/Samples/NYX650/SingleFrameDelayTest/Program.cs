@@ -60,7 +60,7 @@ namespace DeviceSWTriggerMode
             {
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect statu" + pDeviceListInfo[0].status);
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
                     Console.WriteLine("The device state does not support connection." );
                     return;
                 }
@@ -132,12 +132,10 @@ namespace DeviceSWTriggerMode
             //2.ReadNextFrame.
             //3.GetFrame acoording to Ready flag and Frametype.
             //4.sleep 1000/frameRate (ms)
-            ulong endTimestamp = 0;
-            ulong startTimestamp = 0;
+            ulong endTimestampUtc = 0;
             ulong deviceTimestamp = 0;
-            ulong frameInterval = 0;
             ulong frameIntervalNTP = 0;
-
+            Stopwatch stopwatch;
             Console.WriteLine("Please input the number of tests:");
             string input = Console.ReadLine(); // 接受用户输入
             int number = 0;
@@ -151,16 +149,15 @@ namespace DeviceSWTriggerMode
                 //call the below api to trigger one frame, then the frame will be sent
                 // if do not call this function, the frame will not be sent and the below call will return timeout fail
                 status = VNAPI.VN_SoftwareTriggerOnce(deviceHandle);
-                DateTime tTime = DateTime.UtcNow;
-                startTimestamp = (ulong)(tTime.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
+                stopwatch = Stopwatch.StartNew();
                 if (status != ScStatus.SC_OK)
                 {
                     Console.WriteLine("VN_SoftwareTriggerOnce failed status:" + status);
                     continue;
                 }
 
-                //If no image is ready within 1000ms, the function will return ScRetGetFrameReadyTimeOut
-                status = VNAPI.VN_GetFrameReady(deviceHandle, 1200, ref FrameReady);
+                //If no image is ready within 15000ms, the function will return ScRetGetFrameReadyTimeOut
+                status = VNAPI.VN_GetFrameReady(deviceHandle, 15000, ref FrameReady);
                 if (status != ScStatus.SC_OK)
                 {
                     Console.WriteLine("VN_GetFrameReady failed status:" + status);
@@ -179,19 +176,19 @@ namespace DeviceSWTriggerMode
                                 + "frameType:" + depthFrame.frameType + "  "
                                 + "frameIndex:" + depthFrame.frameIndex);
                         }
+                        stopwatch.Stop(); 
                         DateTime currentTime = DateTime.UtcNow;
-                        endTimestamp = (ulong)(currentTime.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
+                        endTimestampUtc = (ulong)(currentTime.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
                         deviceTimestamp = depthFrame.deviceTimestamp;
-                        frameInterval = endTimestamp - startTimestamp;
-                        frameIntervalNTP = endTimestamp - deviceTimestamp;
+                        frameIntervalNTP = endTimestampUtc - deviceTimestamp;
                         if (frameIntervalNTP > 2000)
                         {
-                            strBuf = depthFrame.frameIndex.ToString() + "," + frameInterval.ToString() + ",N/A";
+                            strBuf = depthFrame.frameIndex.ToString() + "," + stopwatch.ElapsedMilliseconds.ToString() + ",N/A";
                             csvWriter.WriteLine(strBuf);
                         }
                         else
                         {
-                            strBuf = depthFrame.frameIndex.ToString() + "," + frameInterval.ToString() + "," + frameIntervalNTP.ToString();
+                            strBuf = depthFrame.frameIndex.ToString() + "," + stopwatch.ElapsedMilliseconds.ToString() + "," + frameIntervalNTP.ToString();
                             csvWriter.WriteLine(strBuf);
                         }
                     }

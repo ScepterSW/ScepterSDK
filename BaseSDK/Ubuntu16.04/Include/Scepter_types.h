@@ -136,7 +136,7 @@ typedef struct
 
 typedef struct
 {
-    int32_t threshold;   //!< Range in [0, 16]. The larger the value is, the more obvious the filtering effect is and the more points are filtered out.
+    int32_t threshold;   //!< Range in [1, 16]. The larger the value is, the more obvious the filtering effect is and the more points are filtered out.
     bool    enable;      //!< Whether to enable flying pixel filter.
 } ScFlyingPixelFilterParams;
 

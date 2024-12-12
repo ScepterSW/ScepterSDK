@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ScepterROS)
 
 ## Add support for C++11, supported in ROS melodic and newer
-add_definitions(-std=c++11)
+## Add support for C++14, supported in pcl
+add_definitions(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -16,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   tf2_geometry_msgs
   cv_bridge
+  pcl_ros
+  pcl_conversions
 )
 
 # ==============================================

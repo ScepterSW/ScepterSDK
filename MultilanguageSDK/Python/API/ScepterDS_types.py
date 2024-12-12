@@ -112,3 +112,11 @@ class ScTimeSyncConfig(Structure):
     _pack_ = 1
     _fields_ = [("flag", c_uint8),
                 ("ip", c_uint8 * 16)]
+
+class ScAIResult(Structure):
+    _pack_ = 1
+    _fields_ = [("resultIndex", c_uint32),
+                ("pResultData",POINTER(c_uint8)),
+                ("dataLen", c_uint32),
+                ("resultTimestamp", c_uint64)]
+
