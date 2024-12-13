@@ -4,10 +4,10 @@
 
 - NYX Camera
 
-  - NYX650 (NYX650_R_20240325_B02  and later )
+  - NYX650/660 (NYX650_R_20240325_B02  and later )
 
 - Vzense Camera
-    - DS86 (DS86_R_20230321  and later )
+    - DS86/87 (DS86_R_20230321  and later )
     - DS77C (DS77_S_20220530_B16  and later )
     - DS77 (DS77_S_20220530_B16  and later) 
 
