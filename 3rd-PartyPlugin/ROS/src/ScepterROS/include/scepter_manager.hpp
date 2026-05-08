@@ -43,6 +43,7 @@ private:
     bool fillImagePtr(const ros::Time& time, const ScFrameType type, ScFrame& frame, sensor_msgs::CameraInfoPtr& cameraInfoPtr, sensor_msgs::ImagePtr& imagePtr);
     void publishCloudPoint(const ros::Time& time, const ScFrame& srcFrame, ros::Publisher& pub, sensor_msgs::CameraInfoPtr& cameraInfoPtr, ScFrame* frameArr = nullptr);
     void updateColorIntrinsicParameters();
+    void publishImage(const ScFrameReady& psReadFrame);
     std::string camera_name_;
     ros::NodeHandle color_nh_, depth_nh_, ir_nh_, alignedDepth_nh_, alignedColor_nh_, depthCloudPoint_nh_,depth2colorCloudPoint_nh_;
     std::shared_ptr<image_transport::ImageTransport> color_it_, depth_it_, ir_it_, alignedDepth_it_, alignedColor_it_;
@@ -61,6 +62,10 @@ private:
     ScSensorExtrinsicParameters extrinsics_{};
     bool hdrEnabled;
     bool wdrEnabled;
+    bool isNeedSoftWareTrigger;
+    sensor_msgs::ImagePtr msg_Ary[5] = {}; // depth_msg,ir_msg,color_msg,alignedDetph_msg,alignedColor_msg
+    image_transport::CameraPublisher pub_Ary[5] = {};
+    ScFrame frameArr[5] = {};
 };
 
 

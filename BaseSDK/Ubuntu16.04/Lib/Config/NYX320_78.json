@@ -1,0 +1,12 @@
+{
+    "productName": "NYX320",
+    "connectType":"socket",
+    "colorSensor": [
+        {
+            "type": "colordriver"
+        }    ],
+    "toFSensor": [
+        {
+            "type": "tofdriver"
+        }]
+}

@@ -1,0 +1,15 @@
+/**:
+  ros__parameters:
+    camera_name: "tof_camera" # camera name, node name would be set as vzense_{camear_name}{index}.
+    camera_sn: "GN6501PBCA7100393" # camera series number.
+    framerate: 10 # camera frame rate.
+    work_mode: 0 # camera work mode. 0: Active Mode 1: Hardwaretrigger Mode 2: Softwaretigger Mode.
+    color_resolution: 0 # camera color resolution. 0: 1600*1200 1: 800*600 2: 640*480.
+    xdr_mode: 0 # camera hdr&wdr mode. 0: hdr disable wdr disable 1: hdr enable wdr diable 2: hdr disable wdr enable.
+    depth_publish: true # whether publish depth image.
+    ir_publish: true # whether publish ir image.
+    color_publish: true # whether publish color image.
+    transformed_color: false # whether enable color to depth transformation and publish it.
+    transformed_depth: false # whether enable depth to color transformation and publish it.
+    depth_cloud_point: false # whether publish depth cloud point.
+    depth2color_cloud_point: false # whether publish depth2color cloud point, must works with the transformed_depth enabled.

@@ -14,30 +14,39 @@ namespace DevHotPlugCallbackC
         public static ScepterAPI VNAPI = new ScepterAPI();
         public static ScepterAPI.PtrHotPlugStatusCallback hpcb;
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            Console.WriteLine("---DevHotPlugCallbackC---");
             UInt32 deviceCount = 0;
             ScStatus status = VNAPI.VN_Initialize();
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_Initialize failed status:" + status);
+                Console.WriteLine("[VN_Initialize] success ScStatus:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_Initialize] failed ScStatus:(" + status + ").");
                 Console.ReadKey(true);
-                return;
+                return 1;
             }
 
             status = VNAPI.VN_GetDeviceCount(ref deviceCount, 3000);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_GetDeviceCount failed! make sure pointer valid or called VN_Initialize");
-                Console.ReadKey(true);
-                return;
+                Console.WriteLine("[VN_GetDeviceCount] success ScStatus:(" + status + "). The device count is " + deviceCount);
             }
-            Console.WriteLine("Get device count: " + deviceCount);
+            else
+            {
+                Console.WriteLine("[VN_GetDeviceCount] failed ScStatus:(" + status + ").");
+                Console.ReadKey(true);
+                return 1;
+            }
+
             if (0 == deviceCount)
             {
-                Console.WriteLine("VN_GetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.");
+                Console.WriteLine("[VN_GetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.");
                 Console.ReadKey(true);
-                return;
+                return 1;
             }
 
             if (InitDevice(deviceCount))
@@ -46,30 +55,47 @@ namespace DevHotPlugCallbackC
 
                 hpcb = new ScepterAPI.PtrHotPlugStatusCallback(HotPlugStateCallback);
                 status = VNAPI.VN_SetHotPlugStatusCallback(hpcb, pUser);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("SetHotPlugStatusCallback failed status:" + status);
-                }
-                else
-                {
-                    Console.WriteLine(" wait for hotplug operation ");
+                    Console.WriteLine("[VN_SetHotPlugStatusCallback] success status:(" + status + "). Waiting for hotplug operation.");
                     // wait for hotplug
                     for (; ; )
                     {
                         Thread.Sleep(1000);
                     }
                 }
-                status = VNAPI.VN_CloseDevice(ref deviceHandle);
-                if (status != ScStatus.SC_OK)
+                else
                 {
-                    Console.WriteLine("CloseDevice failed status:" + status);
+                    Console.WriteLine("[VN_SetHotPlugStatusCallback] fail status:(" + status + ").");
+                    //return 1;
+                }
+                status = VNAPI.VN_CloseDevice(ref deviceHandle);
+                if (status == ScStatus.SC_OK)
+                {
+                    Console.WriteLine("[VN_CloseDevice] success status:(" + status + ").");
+                }
+                else
+                {
+                    Console.WriteLine("[VN_CloseDevice] failed status:(" + status + ").");
+                    return 1;
                 }
             }
-            status = VNAPI.VN_Shutdown();
-            if (status != ScStatus.SC_OK)
+            else
             {
-                Console.WriteLine("Shutdown failed status:" + status);
+                Console.WriteLine("InitDevice failed");
+                return 1;
             }
+            status = VNAPI.VN_Shutdown();
+            if (status == ScStatus.SC_OK)
+            {
+                Console.WriteLine("[VN_Shutdown] success status:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_Shutdown] failed status:(" + status + ").");
+                return 1;
+            }
+            return 0;
         }
 
         public static bool InitDevice(UInt32 deviceCount)
@@ -78,37 +104,38 @@ namespace DevHotPlugCallbackC
             ScStatus status = VNAPI.VN_GetDeviceInfoList(deviceCount, pDeviceListInfo);
             if (status == ScStatus.SC_OK)
             {
+                Console.WriteLine("[VN_GetDeviceInfoList] success status:(" + status + ")." + "The first deviceInfo, <serialNumber>:" + pDeviceListInfo[0].serialNumber + ", <ip>:" + pDeviceListInfo[0].ip + ", <status>:" + pDeviceListInfo[0].status);
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
-                    Console.WriteLine("The device state does not support connection." );
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status + "The device state does not support connection.");
                     return false;
                 }
             }
             else
             {
-                Console.WriteLine("GetDeviceListInfo failed status:" + status);
+                Console.WriteLine("[VN_GetDeviceInfoList] failed status:" + status);
                 return false;
             }
-
-            Console.WriteLine("serialNumber:" + pDeviceListInfo[0].serialNumber);
-            Console.WriteLine("ip:" + pDeviceListInfo[0].ip);
-            Console.WriteLine("connectStatus:" + pDeviceListInfo[0].status);
 
             status = VNAPI.VN_OpenDeviceBySN(pDeviceListInfo[0].serialNumber, ref deviceHandle);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("OpenDevice failed status:" + status);
+                Console.WriteLine("[VN_OpenDeviceBySN] success status:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_OpenDeviceBySN] fail status:(" + status + ").");
                 return false;
             }
 
-            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
-
             status =  VNAPI.VN_StartStream(deviceHandle);
-
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("StartStream failed status:" + status);
+                Console.WriteLine("[VN_StartStream] success status:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_StartStream] fail status:(" + status + ").");
                 return false;
             }
 
@@ -117,18 +144,54 @@ namespace DevHotPlugCallbackC
 
         public static void HotPlugStateCallback(ref ScDeviceInfo pInfo, int status, IntPtr contex)
         {
-              Console.WriteLine("ip " + status + "  " + pInfo.ip + "    " + (status == 0 ? "add" : "remove"));          Console.WriteLine("serialNumber " + status + "  " + pInfo.serialNumber + "    " + (status == 0 ? "add" : "remove"));
-
-
+            Console.WriteLine();
             if (status == 0)
             {
-                Console.WriteLine("VN_OpenDevice " + VNAPI.VN_OpenDeviceBySN(pInfo.serialNumber, ref deviceHandle));
-                Console.WriteLine("VN_StartStream " + VNAPI.VN_StartStream(deviceHandle));
+                Console.WriteLine("The device is <Added>, deviceInfo <serialNumber>:  "  + pInfo.serialNumber + ", <ip>: " + pInfo.ip + ", <status>: " + pInfo.status);
+                ScStatus ret = VNAPI.VN_OpenDeviceBySN(pInfo.serialNumber, ref deviceHandle);
+                if (ret == ScStatus.SC_OK)
+                {
+                    Console.WriteLine("[VN_OpenDeviceBySN] success status:(" + ret + ").");
+                }
+                else
+                {
+                    Console.WriteLine("[VN_OpenDeviceBySN] fail status:(" + ret + ").");
+                    return;
+                }
+                ret =  VNAPI.VN_StartStream(deviceHandle);
+                if (ret == ScStatus.SC_OK)
+                {
+                    Console.WriteLine("[VN_StartStream] success status:(" + ret + ").");
+                }
+                else
+                {
+                    Console.WriteLine("[VN_StartStream] fail status:(" + ret + ").");
+                    return;
+                }
             }
             else
             {
-                Console.WriteLine("VN_StopStream " + VNAPI.VN_StopStream(deviceHandle));
-                Console.WriteLine("VN_CloseDevice " + VNAPI.VN_CloseDevice(ref deviceHandle));
+                Console.WriteLine("The device is <Removed>, deviceInfo <serialNumber>:  " + pInfo.serialNumber + ", <ip>: " + pInfo.ip + ", <status>: " + pInfo.status);
+                ScStatus ret = VNAPI.VN_StopStream(deviceHandle);
+                if (ret == ScStatus.SC_OK)
+                {
+                    Console.WriteLine("[VN_StopStream] success status:(" + ret + ").");
+                }
+                else
+                {
+                    Console.WriteLine("[VN_StopStream] fail status:(" + ret + ").");
+                    return ;
+                }
+                ret =  VNAPI.VN_CloseDevice(ref deviceHandle);
+                if (ret == ScStatus.SC_OK)
+                {
+                    Console.WriteLine("[VN_CloseDevice] success status:(" + ret + ").");
+                }
+                else
+                {
+                    Console.WriteLine("[VN_CloseDevice] fail status:(" + ret + ").");
+                    return;
+                }
             }
         }
     }

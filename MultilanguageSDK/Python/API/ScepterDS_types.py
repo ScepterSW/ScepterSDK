@@ -1,4 +1,4 @@
-import os, platform, numpy
+import os, platform
 from ctypes import *
 from enum import Enum
 

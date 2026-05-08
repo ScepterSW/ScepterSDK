@@ -8,6 +8,7 @@
         }    ],
     "toFSensor": [
         {
-            "type": "nyx660"
+            "type": "nyx660",
+            "resolutionList": ["640_480", "320_240"]
         }]
 }

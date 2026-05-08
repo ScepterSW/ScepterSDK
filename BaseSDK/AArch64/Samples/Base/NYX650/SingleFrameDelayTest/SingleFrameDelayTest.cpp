@@ -32,7 +32,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -43,12 +43,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -61,7 +61,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -69,7 +69,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -87,7 +87,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scSetWorkMode(deviceHandle, SC_SOFTWARE_TRIGGER_MODE);
@@ -98,7 +98,7 @@ int main()
 	else
 	{
 		cout << "[scSetWorkMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	int frameRate = 0;
@@ -110,7 +110,7 @@ int main()
 	else
 	{
 		cout << "[scGetFrameRate] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scStartStream(deviceHandle);
@@ -121,7 +121,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	string fileName = "";
@@ -129,15 +129,13 @@ int main()
 	if (!csvWriter.is_open())
 	{
 		cout << "csv file open failed" << endl;
-		return -1;
+		return 1;
 	}
 	csvWriter << "frameIndex,TotalDelay,ExcludeDelayofExposure" << endl;
 
-	cout << "Please input the number of tests: ";
-	uint32_t number = 0;
-	cin >> number;
+	uint32_t number = 100;
 
-	for (int i = 0; i < number; i++)
+	for (uint32_t i = 0; i < number; i++)
 	{
 		timespec timeStart, timeEnd;
 		status = scSoftwareTriggerOnce(deviceHandle);
@@ -169,7 +167,7 @@ int main()
 			{
 				if (depthFrame.frameIndex % 10 == 0)
 				{
-					cout << "SC_DEPTH_FRAME <frameIndex>: " << depthFrame.frameIndex << endl;
+					cout << "[scGetFrame] success, ScStatus(" << status << ")." << "SC_DEPTH_FRAME <frameIndex>: " << depthFrame.frameIndex << endl;
 				}
 
 				clock_gettime(CLOCK_REALTIME, &timeEnd);
@@ -210,7 +208,7 @@ int main()
 	else
 	{
 		cout << "[scSetWorkMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scStopStream(deviceHandle);
@@ -221,7 +219,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -232,7 +230,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -243,7 +241,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

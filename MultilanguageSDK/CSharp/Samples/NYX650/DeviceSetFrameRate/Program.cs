@@ -9,7 +9,7 @@ namespace DeviceSetFrameRate
     using ScDeviceHandle = System.IntPtr;
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             Console.WriteLine("---DeviceSetFrameRate---");
 
@@ -21,79 +21,100 @@ namespace DeviceSetFrameRate
 
             //SDK Initialize
             status = VNAPI.VN_Initialize();
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_Initialize failed status:" + status);
+                Console.WriteLine("[VN_Initialize] success ScStatus:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_Initialize] fail ScStatus:(" + status + ").");
                 Console.ReadKey(true);
-                return;
+                return 1;
             }
 
             //1.Search and notice the count of devices.
             //2.get infomation of the devices.
             //3.open devices accroding to the info.
             status = VNAPI.VN_GetDeviceCount(ref deviceCount, 3000);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_GetDeviceCount failed! make sure pointer valid or called VN_Initialize");
-                Console.ReadKey(true);
-                return;
+                Console.WriteLine("[VN_GetDeviceCount] success ScStatus:(" + status + "). The device count is " + deviceCount);
             }
-            Console.WriteLine("Get device count: " + deviceCount);
+            else
+            {
+                Console.WriteLine("[VN_GetDeviceCount] fail ScStatus:(" + status + ").");
+                Console.ReadKey(true);
+                return 1;
+            }
             if (0 == deviceCount)
             {
-                Console.WriteLine("VN_GetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.");
+                Console.WriteLine("[VN_GetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.");
                 Console.ReadKey(true);
-                return;
+                return 1;
             }
 
             ScDeviceInfo[] pDeviceListInfo = new ScDeviceInfo[deviceCount];
-
             status = VNAPI.VN_GetDeviceInfoList(deviceCount, pDeviceListInfo);
             if (status == ScStatus.SC_OK)
             {
+                Console.WriteLine("[VN_GetDeviceInfoList] success status:(" + status + ")." + "The first deviceInfo, <serialNumber>:" + pDeviceListInfo[0].serialNumber + ", <ip>:" + pDeviceListInfo[0].ip + ", <status>:" + pDeviceListInfo[0].status);
                 if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
                 {
-                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
-                    Console.WriteLine("The device state does not support connection." );
-                    return;
+                    Console.WriteLine("connect status" + pDeviceListInfo[0].status + "The device state does not support connection.");
+                    return 1;
                 }
             }
             else
             {
-                Console.WriteLine("GetDeviceListInfo failed status:" + status);
-                return;
+                Console.WriteLine("[VN_GetDeviceInfoList] fail status:" + status);
+                return 1;
             }
 
             status = VNAPI.VN_OpenDeviceBySN(pDeviceListInfo[0].serialNumber, ref deviceHandle);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("OpenDevice failed status:" + status);
-                return;
+                Console.WriteLine("[VN_OpenDeviceBySN] success status:(" + status + ").");
             }
-            Console.WriteLine("VN_OpenDeviceBySN,status :" + status);
+            else
+            {
+                Console.WriteLine("[VN_OpenDeviceBySN] fail status:(" + status + ").");
+                return 1;
+            }
 
             int frameRate = new int();
             frameRate = 5;
             status = VNAPI.VN_SetFrameRate(deviceHandle, frameRate);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_SetFrameRate failed status:" + status);
-                return;
+                Console.WriteLine("[VN_SetFrameRate] success status:(" + status + "). Set the device frame rate to " + frameRate);
             }
-            Console.WriteLine("set frame rate :" + frameRate + " is OK.");
+            else
+            {
+                Console.WriteLine("[VN_SetFrameRate] fail status:(" + status + ").");
+                return 1;
+            }
+
             status = VNAPI.VN_SetWorkMode(deviceHandle, ScWorkMode.SC_ACTIVE_MODE);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_SetWorkMode failed status:" + status);
-                return;
+                Console.WriteLine("[VN_SetWorkMode] success status:(" + status + "). Set SC_ACTIVE_MODE.");
             }
-            Console.WriteLine("set active mode");
+            else
+            {
+                Console.WriteLine("[VN_SetWorkMode] fail status:(" + status + ").");
+                return 1;
+            }
+
             //Starts capturing the image stream
             status = VNAPI.VN_StartStream(deviceHandle);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_StartStream failed status:" + status);
-                return;
+                Console.WriteLine("[VN_StartStream] success status:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_StartStream] fail status:(" + status + ").");
+                return 1;
             }
 
             Console.WriteLine("Start testing the average frame rate for 30 seconds, Please wait patiently");
@@ -108,9 +129,13 @@ namespace DeviceSetFrameRate
             {
                 ScFrameReady FrameReady = new ScFrameReady();
                 status = VNAPI.VN_GetFrameReady(deviceHandle, 1200, ref FrameReady);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("VN_GetFrameReady failed status:" + status);
+                    Console.WriteLine("[VN_GetFrameReady] success status:(" + status + ").");
+                }
+                else
+                {
+                    Console.WriteLine("[VN_GetFrameReady] fail status:(" + status + ").");
                     continue;
                 }
 
@@ -118,45 +143,60 @@ namespace DeviceSetFrameRate
                 {
                     ScFrame depthFrame = new ScFrame();
                     status = VNAPI.VN_GetFrame(deviceHandle, ScFrameType.SC_DEPTH_FRAME, ref depthFrame);
-                    if (depthFrame.pFrameData != IntPtr.Zero)
+                    if (status == ScStatus.SC_OK)
                     {
+                        Console.WriteLine("[VN_GetFrame] success status:(" + status + "). SC_DEPTH_FRAME <frameIndex>: " + depthFrame.frameIndex);
                         UInt64 diff = GetTimeStampMS() - start;
                         index++;
                         if (diff > (TESTPERIOD * 1000))
                         {
                             float fps = (index * TESTPERIOD * 1000.0f / diff) / TESTPERIOD;
                             index = 0;
-                            Console.WriteLine(fps);
+                            Console.WriteLine("Average frame rate: " + fps);
                             break;
                         }
+                    }
+                    else
+                    {
+                        Console.WriteLine("[VN_GetFrame] fail status:(" + status + ").");
                     }
                 }
 
             }
 
             status = VNAPI.VN_StopStream(deviceHandle);
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_StopStream failed status:" + status);
-                return;
+                Console.WriteLine("[VN_StopStream] success status:(" + status + ").");
             }
-            //1.close device
-            //2.SDK shutdown
-            status = VNAPI.VN_CloseDevice(ref deviceHandle);
-            if (status != ScStatus.SC_OK)
+            else
             {
-                Console.WriteLine("VN_CloseDevice failed status:" + status);
-                return;
+                Console.WriteLine("[VN_StopStream] fail status:(" + status + ").");
+                return 1;
+            }
+            status = VNAPI.VN_CloseDevice(ref deviceHandle);
+            if (status == ScStatus.SC_OK)
+            {
+                Console.WriteLine("[VN_CloseDevice] success status:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_CloseDevice] fail status:(" + status + ").");
+                return 1;
             }
             status = VNAPI.VN_Shutdown();
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_Shutdown failed status:" + status);
-                return;
+                Console.WriteLine("[VN_Shutdown] success status:(" + status + ").");
             }
-            Console.WriteLine("---end---");
+            else
+            {
+                Console.WriteLine("[VN_Shutdown] fail status:(" + status + ").");
+                return 1;
+            }
+            Console.WriteLine("---End---");
 
-            return ;
+            return 0;
         }
 
         static UInt64 GetTimeStampMS()

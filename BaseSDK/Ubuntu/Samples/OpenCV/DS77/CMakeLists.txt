@@ -1,22 +1,14 @@
-cmake_minimum_required(VERSION 2.8)
-project(DS77_OpenCVSample)
-
-set(CMAKE_SKIP_RPATH FALSE)
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_SKIP_INSTALL_RPATH_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN/:../../../Lib:../Lib:../Samples/OpenCV/Thirdparty/opencv-3.4.1/lib:../Thirdparty/opencv-3.4.1/lib")
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
+cmake_minimum_required(VERSION 3.5.1)
+project(DS77_OpenCVSample) 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-add_definitions("-Wall -fPIC -D Linux")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../../Include" "${CMAKE_CURRENT_SOURCE_DIR}/../Thirdparty/opencv-3.4.16/include")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../../Lib/" "${CMAKE_CURRENT_SOURCE_DIR}/../Thirdparty/opencv-3.4.16/lib")
 
-
-include_directories("../../../Include" "../Thirdparty/opencv-3.4.1/include")
-LINK_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/../../../Lib/")
-SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../PrecompiledSamples")
-
-
+set(OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../PrecompiledSamples")
+if(NOT(EXISTS "${OUTPUT_PATH}" AND IS_DIRECTORY "${OUTPUT_PATH}"))
+    file(MAKE_DIRECTORY ${OUTPUT_PATH}) 
+endif()
+set(EXECUTABLE_OUTPUT_PATH "${OUTPUT_PATH}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,\$ORIGIN -Wl,-rpath,\$ORIGIN/../Lib -Wl,-rpath,\$ORIGIN/../Samples/OpenCV/Thirdparty/opencv-3.4.16/lib")
 add_executable(${PROJECT_NAME} "FrameViewer.cpp")
-target_link_libraries(${PROJECT_NAME} DSImgPreProcess Scepter_api opencv_core opencv_highgui opencv_imgproc pthread)
-#set( CMAKE_BUILD_TYPE Debug )
+target_link_libraries(${PROJECT_NAME} Scepter_api opencv_world)

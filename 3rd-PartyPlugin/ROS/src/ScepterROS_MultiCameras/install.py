@@ -6,7 +6,6 @@ import shutil
 
 # check modules
 import numpy
-import cv2
 import ctypes
  
 def pullSDK(system_config):  

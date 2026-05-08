@@ -21,7 +21,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -32,12 +32,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -50,7 +50,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -58,7 +58,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -76,7 +76,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scStartStream(deviceHandle);
@@ -87,7 +87,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	int rate = 10;
@@ -99,7 +99,7 @@ int main()
 	else
 	{
 		cout << "[scGetFrameRate] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << endl << "---To SC_EXPOSURE_CONTROL_MODE_MANUAL---" << endl;
@@ -111,7 +111,7 @@ int main()
 	else
 	{
 		cout << "[scSetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << "---1. Get color sensor exposure time range with frame rate " << rate << "---" << endl;
@@ -124,7 +124,7 @@ int main()
 	else
 	{
 		cout << "[scGetMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << "---2. Set and get color sensor new exposure time---" << endl;
@@ -137,7 +137,7 @@ int main()
 	else
 	{
 		cout << "[scSetExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetExposureTime(deviceHandle, SC_COLOR_SENSOR, &exposureTime);
@@ -148,7 +148,7 @@ int main()
 	else
 	{
 		cout << "[scGetExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	float colorGain = 3.5;
@@ -160,7 +160,7 @@ int main()
 	else
 	{
 		cout << "[scSetColorGain] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	colorGain = 0.0;
@@ -172,7 +172,7 @@ int main()
 	else
 	{
 		cout << "[scGetColorGain] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << endl << "---To SC_EXPOSURE_CONTROL_MODE_AUTO---" << endl;
@@ -184,7 +184,7 @@ int main()
 	else
 	{
 		cout << "[scSetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << "---1. Get color exposure time range---" << endl;
@@ -196,7 +196,7 @@ int main()
 	else
 	{
 		cout << "[scGetMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << "---2. Set and get color sensor new max exposure time range in auto mode---" << endl;
@@ -209,7 +209,7 @@ int main()
 	else
 	{
 		cout << "[scSetColorAECMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetColorAECMaxExposureTime(deviceHandle, &AECMaxExposureTime);
@@ -220,7 +220,7 @@ int main()
 	else
 	{
 		cout << "[scGetColorAECMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << endl;
 
@@ -232,7 +232,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -243,7 +243,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -254,7 +254,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

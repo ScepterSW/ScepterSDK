@@ -10,7 +10,7 @@ ScDeviceHandle deviceHandle = 0;
 bool InitDevice(const int deviceCount);
 void HotPlugStateCallback(const ScDeviceInfo *pInfo, int status, void *contex);
 
-int main(int argc, char *argv[])
+int main()
 {
 	cout << "---DevHotPlugCallbackC---" << endl;
 
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	uint32_t deviceCount = 0;
@@ -34,12 +34,12 @@ int main(int argc, char *argv[])
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	if (InitDevice(deviceCount))
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 		else
 		{
 			cout << "[scSetHotPlugStatusCallback] fail, ScStatus(" << status << ")." << endl;
+			return 1;
 		}
 
 		status = scCloseDevice(&deviceHandle);
@@ -66,7 +67,13 @@ int main(int argc, char *argv[])
 		else
 		{
 			cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
+			return 1;
 		}
+	}
+	else
+	{
+		cout << "InitDevice fail." << endl;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -77,6 +84,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
+		return 1;
 	}
 
 	if (pDeviceListInfo)
@@ -147,8 +155,8 @@ void HotPlugStateCallback(const ScDeviceInfo *pInfo, int status, void *contex)
 	{
 		cout << endl << "The device is <Added>, deviceInfo <serialNumber>: " << pInfo->serialNumber
 			<< ", <ip>: " << pInfo->ip << ", <status>: " << pInfo->status << endl;
-
-		ScStatus status = scOpenDeviceBySN(pInfo->serialNumber, &deviceHandle);
+		(void*)contex;
+		status = scOpenDeviceBySN(pInfo->serialNumber, &deviceHandle);
 		if (status == ScStatus::SC_OK)
 		{
 			cout << "[scOpenDeviceBySN] success, ScStatus(" << status << ")." << endl;
@@ -172,10 +180,10 @@ void HotPlugStateCallback(const ScDeviceInfo *pInfo, int status, void *contex)
 	}
 	else
 	{
-		cout << endl << "The device is <Removed>, deviceInfo <serialNumber>: " << pDeviceListInfo[0].serialNumber
-			<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
+		cout << endl << "The device is <Removed>, deviceInfo <serialNumber>: " << pInfo->serialNumber
+			<< ", <ip>: " << pInfo->ip << ", <status>: " << pInfo->status << endl;
 
-		ScStatus status = scStopStream(deviceHandle);
+		status = scStopStream(deviceHandle);
 		if (status == ScStatus::SC_OK)
 		{
 			cout << "[scStopStream] success, ScStatus(" << status << ")." << endl;

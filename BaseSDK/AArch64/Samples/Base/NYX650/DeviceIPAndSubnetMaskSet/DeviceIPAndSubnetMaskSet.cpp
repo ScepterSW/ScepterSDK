@@ -21,7 +21,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -32,12 +32,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -50,7 +50,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -58,7 +58,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -76,7 +76,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scSetDeviceDHCPEnabled(deviceHandle, false);
@@ -87,11 +87,11 @@ int main()
 	else
 	{
 		cout << "[scSetDeviceDHCPEnabled] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	string strIP = "192.168.1.102";
-	status = scSetDeviceIPAddr(deviceHandle, strIP.c_str(), strIP.length());
+	status = scSetDeviceIPAddr(deviceHandle, strIP.c_str(), (int32_t)strIP.length());
 	if (status == ScStatus::SC_OK)
 	{
 		cout << "[scSetDeviceIPAddr] success, ScStatus(" << status << "). Set the device IP to " << strIP.c_str() << endl;
@@ -99,11 +99,11 @@ int main()
 	else
 	{
 		cout << "[scSetDeviceIPAddr] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	string strSubMask = "255.255.255.0";
-	status = scSetDeviceSubnetMask(deviceHandle, strSubMask.c_str(), strSubMask.length());
+	status = scSetDeviceSubnetMask(deviceHandle, strSubMask.c_str(), (int32_t)strSubMask.length());
 	if (status == ScStatus::SC_OK)
 	{
 		cout << "[scSetDeviceSubnetMask] success, ScStatus(" << status << "). Set the device subnet mask to " << strSubMask.c_str() << endl;
@@ -111,7 +111,7 @@ int main()
 	else
 	{
 		cout << "[scSetDeviceSubnetMask] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scRebootDevie(deviceHandle);
@@ -122,7 +122,7 @@ int main()
 	else
 	{
 		cout << "[scRebootDevie] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << "Waiting for reboot." << endl;
@@ -137,7 +137,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -148,7 +148,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.5.1)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../../Include")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../../Lib/")
+
+set(OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../PrecompiledSamples/OmniGuard_Samples")
+if(NOT(EXISTS "${OUTPUT_PATH}" AND IS_DIRECTORY "${OUTPUT_PATH}"))
+    file(MAKE_DIRECTORY ${OUTPUT_PATH}) 
+endif()
+set(EXECUTABLE_OUTPUT_PATH "${OUTPUT_PATH}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,\$ORIGIN -Wl,-rpath,\$ORIGIN/../Lib")
+add_subdirectory(SafetyCameraGetResult)

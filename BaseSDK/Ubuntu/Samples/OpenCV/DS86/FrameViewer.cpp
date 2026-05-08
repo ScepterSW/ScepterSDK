@@ -39,7 +39,7 @@ void on_TransMouseHandle(int event, int x, int y, int flags, void * param)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	uint32_t deviceCount = 0;
 	
@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "scInitialize failed!" << endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return -1;
 	}
 
@@ -55,14 +58,20 @@ int main(int argc, char *argv[])
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "scGetDeviceCount failed!" << endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return -1;
 	}
 	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
 		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return -1;
 	}
 
@@ -121,7 +130,7 @@ int main(int argc, char *argv[])
                 index++;
                 if (diff > cv::getTickFrequency())
                 {
-                    fps = index * cv::getTickFrequency() / diff;
+                    fps = (float)(index * cv::getTickFrequency() / diff);
                     index = 0;
                     start = current;
                 }
@@ -175,7 +184,7 @@ int main(int argc, char *argv[])
 				index++;
 				if (diff > cv::getTickFrequency())
 				{
-					fps = index * cv::getTickFrequency() / diff;
+					fps = (float)(index * cv::getTickFrequency() / diff);
 					index = 0;
 					start = current;
 				}
@@ -209,7 +218,7 @@ int main(int argc, char *argv[])
                 index++;
                 if (diff > cv::getTickFrequency())
                 {
-                    fps = index * cv::getTickFrequency() / diff;
+                    fps = (float)(index * cv::getTickFrequency() / diff);
                     index = 0;
                     start = current;
                 }
@@ -261,7 +270,7 @@ int main(int argc, char *argv[])
                 index++;
                 if (diff > cv::getTickFrequency())
                 {
-                    fps = index * cv::getTickFrequency() / diff;
+                    fps = (float)(index * cv::getTickFrequency() / diff);
                     index = 0;
                     start = current;
                 }
@@ -323,7 +332,7 @@ int main(int argc, char *argv[])
 				index++;
 				if (diff > cv::getTickFrequency())
 				{
-					fps = index * cv::getTickFrequency() / diff;
+					fps = (float)(index * cv::getTickFrequency() / diff);
 					index = 0;
 					start = current;
 				}
@@ -451,7 +460,10 @@ bool InitDevice(const int deviceCount)
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "OpenDevice failed!" << endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return false;
 	}
     

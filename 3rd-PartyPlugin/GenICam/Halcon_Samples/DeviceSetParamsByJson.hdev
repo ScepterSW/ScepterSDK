@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.1.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* </c>
+<c>* Example for the usage of a Vzense 3D camera in HALCON.</c>
+<c>* </c>
+<c>* This sample shows how to set config json to the camera.</c>
+<c></c>
+<c>* Please note that you first need to install the matching Vzense</c>
+<c>* GenTL Producer. After this, you can access the camera with the</c>
+<c>* HALCON GenICamTL interface.</c>
+<c>*</c>
+<l>dev_close_window()</l>
+<l>dev_update_off()</l>
+<c>* check device</c>
+<l>info_framegrabber ('GenICamTL', 'info_boards', Information, DeviceList)</l>
+<l>tuple_regexp_select (DeviceList, 'sceptergentl.cti', Device)</l>
+<l>if (Device == [])</l>
+<c>     * No Vzense camera found</c>
+<l>    stop ()</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    open_file('DeviceSetParamsByJson.txt', 'output', FileHandle)</l>
+<l>    fwrite_string(FileHandle, '---DeviceSetParamsByJson---\n')</l>
+<l>    tuple_regexp_match(Device[0], 'user_name:([^|]+)', user_name)</l>
+<l>    fwrite_string(FileHandle, 'The first deviceInfo, &lt;serialNumber&gt;: '+ user_name +'\n')</l>
+<l>    open_framegrabber ('GenICamTL', 1, 1, 0, 0, 0, 0, 'default', -1, 'default', -1, 'false', 'default', Device[0], -1, -1, AcqHandle)</l>
+<l>    fwrite_string(FileHandle, 'Open framegrabber success.\n')</l>
+<c></c>
+<c>    * choose user selector</c>
+<l>    set_framegrabber_param(AcqHandle, 'UserSetSelector', 'CurrentSetting')</l>
+<c>    * set user description(need has camera_config.json file in the $GENICAM_GENTL64_PATH already)</c>
+<l>    set_framegrabber_param(AcqHandle, 'UserSetDescription', 'camera_config.json')</l>
+<c>    * Set param by camera_config.json</c>
+<l>    set_framegrabber_param(AcqHandle, 'UserSetLoad', 1)</l>
+<l>    fwrite_string(FileHandle, 'SetParamsByJson success.\n')</l>
+<c>    * close device</c>
+<l>    close_framegrabber (AcqHandle)</l>
+<l>    fwrite_string(FileHandle, 'Close framegrabber success.\n')</l>
+<l>    fwrite_string(FileHandle, '---End---\n')</l>
+<l>    close_file(FileHandle)</l>
+<l>catch(Exception)</l>
+<l>     dev_get_exception_data (Exception, 'error_code', error_code)</l>
+<l>     dev_get_exception_data (Exception, 'error_msg', errorMsg)</l>
+<l>     dev_get_exception_data (Exception, 'add_error_message', add_error_message)</l>
+<l>     dev_get_exception_data (Exception, 'program_line', program_line)</l>
+<l>     dev_get_exception_data (Exception, 'operator', operator)</l>
+<l>     outPutMsg:= add_error_message + ' Operator: ' + operator + ' ErrorMsg: ' + errorMsg + ' ErrorCode: ' + error_code + ' Line: ' + program_line</l>
+<l>     fwrite_string(FileHandle, outPutMsg + '\n')</l>
+<l>     close_framegrabber (AcqHandle)</l>
+<l>     close_file(FileHandle)</l>
+<l>     stop()</l>
+<l>endtry</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="disp_current_image">
+<interface>
+<io>
+<par name="Images" base_type="iconic" dimension="0"/>
+</io>
+<ic>
+<par name="Index" base_type="ctrl" dimension="0"/>
+<par name="WindowHandle" base_type="ctrl" dimension="0"/>
+<par name="Title" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>select_obj (Images, Image, Index)</l>
+<l>dev_set_window (WindowHandle)</l>
+<l>if (strstr(Title, 'IR') == 0)</l>
+<l>   dev_set_lut('inv_sqrt')</l>
+<l>endif</l>
+<l>dev_display (Image)</l>
+<l>dev_disp_text (Title, 'window', 12, 12, 'black', [], [])</l>
+<l>return ()</l>
+</body>
+<docu id="disp_current_image">
+<parameters>
+<parameter id="Images"/>
+<parameter id="Index"/>
+<parameter id="Title"/>
+<parameter id="WindowHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="create_3d_window">
+<interface>
+<ic>
+<par name="Width" base_type="ctrl" dimension="0"/>
+<par name="Height" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Window3DHande" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>            dev_open_window (0, 2*Width, Width, Height, 'black', Window3DHande)</l>
+<l>            dev_set_window (Window3DHande)</l>
+<l>            dev_set_lut('default')</l>
+<l>return ()</l>
+</body>
+<docu id="create_3d_window">
+<parameters>
+<parameter id="Height"/>
+<parameter id="Width"/>
+<parameter id="Window3DHande"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

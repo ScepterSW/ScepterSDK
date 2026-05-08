@@ -21,7 +21,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -32,12 +32,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -50,7 +50,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -58,7 +58,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -76,7 +76,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	ScIRGMMCorrectionParams IRGMMCorrectionParams = { 1, true };
@@ -95,7 +95,7 @@ int main()
 	else
 	{
 		cout << "[scGetIRGMMCorrection] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	IRGMMCorrectionParams.enable = !IRGMMCorrectionParams.enable;
@@ -118,7 +118,7 @@ int main()
 	else
 	{
 		cout << "[scSetIRGMMCorrection] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -129,7 +129,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -140,9 +140,9 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
-	cout << "---Please reboot camera to restore the default settings---" << endl;
+	
 	cout << "---End---" << endl;
 
 	return 0;

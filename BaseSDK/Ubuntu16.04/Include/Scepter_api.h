@@ -362,6 +362,24 @@ SCEPTER_C_API_EXPORT ScStatus scGetColorGain(ScDeviceHandle device, float* pPara
 SCEPTER_C_API_EXPORT ScStatus scGetSupportedResolutionList(ScDeviceHandle device, ScSensorType type, ScResolutionList* pList);
 
 /**
+ * @brief        Set the ToF frame Resolution.
+ * @param[in]    device       The handle of the device.
+ * @param[in]    w            The width of ToF image
+ * @param[in]    h            The height of ToF image
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetToFResolution(ScDeviceHandle device, int32_t w, int32_t h);
+
+/**
+ * @brief        Returns the the ToF frame Resolution.
+ * @param[in]    device       The handle of the device.
+ * @param[out]   pW           The width of ToF image
+ * @param[out]   pH           The height of ToF image
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetToFResolution(ScDeviceHandle device, int32_t* pW, int32_t* pH);
+
+/**
  * @brief        Set the color frame Resolution.
  * @param[in]    device       The handle of the device.
  * @param[in]    w            The width of color image
@@ -430,6 +448,28 @@ SCEPTER_C_API_EXPORT ScStatus scSetColorAECMaxExposureTime(ScDeviceHandle device
  * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scGetColorAECMaxExposureTime(ScDeviceHandle device, int32_t* pExposureTime);
+
+/**
+ * @brief        Set the ROI of color sensor in automatic mode. The interface is used in automatic mode.
+ * @param[in]    device			  The handle of the device on which to set the exposure time in microseconds.
+ * @param[in]    x				  The x point of the ROI. The value must be within the color's resolution.
+ * @param[in]    y				  The y point of the ROI. The value must be within the color's resolution.
+ * @param[in]    width			  The width of the ROI. The value must be within the color's resolution.
+ * @param[in]    height			  The height of the ROI. The value must be within the color's resolution.
+ * @return       ::SC_OK If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scSetColorAECROI(ScDeviceHandle device, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+
+/**
+ * @brief        Get the ROI of color sensor in automatic mode. The interface is used in automatic mode.
+ * @param[in]    device           The handle of the device on which to get the exposure time in microseconds.
+ * @param[out]   x				  The x point of the ROI. The value must be within the color's resolution.
+ * @param[out]   y				  The y point of the ROI. The value must be within the color's resolution.
+ * @param[out]   width			  The width of the ROI. The value must be within the color's resolution.
+ * @param[out]   height			  The height of the ROI. The value must be within the color's resolution.
+ * @return       ::SC_OK          If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scGetColorAECROI(ScDeviceHandle device, uint16_t* x, uint16_t* y, uint16_t* width, uint16_t* height);
 
 /**
  * @brief        Get the maximum exposure time of sensor.

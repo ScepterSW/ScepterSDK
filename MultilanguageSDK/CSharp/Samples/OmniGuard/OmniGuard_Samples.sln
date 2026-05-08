@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.35431.46
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafetyCameraGetResult", "SafetyCameraGetResult\SafetyCameraGetResult.csproj", "{5A59E0DA-F5EE-4475-8050-E2603F68DC00}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A59E0DA-F5EE-4475-8050-E2603F68DC00}.Debug|x64.ActiveCfg = Debug|x64
+		{5A59E0DA-F5EE-4475-8050-E2603F68DC00}.Debug|x64.Build.0 = Debug|x64
+		{5A59E0DA-F5EE-4475-8050-E2603F68DC00}.Release|x64.ActiveCfg = Release|x64
+		{5A59E0DA-F5EE-4475-8050-E2603F68DC00}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AFB3E21C-7BD8-4519-B946-8F9A257A09DD}
+	EndGlobalSection
+EndGlobal

@@ -26,7 +26,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -37,12 +37,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -55,7 +55,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -63,7 +63,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -81,7 +81,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	int frameRate = 5;
@@ -93,17 +93,17 @@ int main()
 	else
 	{
 		cout << "[scSetFrameRate] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	status = scSetWorkMode(deviceHandle, SC_ACTIVE_MODE);
 	if (status == ScStatus::SC_OK)
 	{
-		cout << "[scSetWorkMode] success, ScStatus(" << status << ")." << endl;
+		cout << "[scSetWorkMode] success, ScStatus(" << status << "). Set SC_ACTIVE_MODE." << endl;
 	}
 	else
 	{
 		cout << "[scSetWorkMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	status = scStartStream(deviceHandle);
 	if (status == ScStatus::SC_OK)
@@ -113,7 +113,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << "Start testing the average frame rate for 30 seconds, please wait patiently." << endl;
@@ -165,7 +165,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -176,7 +176,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -187,7 +187,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

@@ -26,7 +26,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -37,12 +37,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -55,7 +55,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -63,7 +63,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -81,7 +81,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	ScSensorIntrinsicParameters cameraParam = { 0 };
@@ -93,7 +93,7 @@ int main()
 	else
 	{
 		cout << "[scGetSensorIntrinsicParameters] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scStartStream(deviceHandle);
@@ -104,7 +104,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	//Wait for the device to upload image data.
@@ -134,11 +134,11 @@ int main()
 				ScFrame &srcFrame = depthFrame;
 				const int WINDOW_SIZE = 100;
 				const uint16_t* pDepthFrameData = (uint16_t*)srcFrame.pFrameData;
-				for (int i = (srcFrame.height - WINDOW_SIZE) / 2, offset = i * srcFrame.width; i < (srcFrame.height + WINDOW_SIZE) / 2; i++)
+				for (int ind = (srcFrame.height - WINDOW_SIZE) / 2, offset = ind * srcFrame.width; ind < (srcFrame.height + WINDOW_SIZE) / 2; ind++)
 				{
 					for (int j = (srcFrame.width - WINDOW_SIZE) / 2; j < (srcFrame.width + WINDOW_SIZE) / 2; j++)
 					{
-						ScDepthVector3 depthPoint = { j, i, pDepthFrameData[offset + j] };
+						ScDepthVector3 depthPoint = { j, ind, pDepthFrameData[offset + j] };
 						ScVector3f worldV = {};
 						status = scConvertDepthToPointCloud(deviceHandle, &depthPoint, &worldV, 1, &cameraParam);
 						if (status == ScStatus::SC_OK)
@@ -162,7 +162,7 @@ int main()
 			else
 			{
 				cout << "[scGetFrame] fail, ScStatus(" << status << ")." << endl;
-				return -1;
+				return 1;
 			}
 		}
 	}
@@ -175,7 +175,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -186,7 +186,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -197,7 +197,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

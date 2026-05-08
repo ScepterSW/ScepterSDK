@@ -7,15 +7,14 @@ sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
-
+print("---ToFFiltersSetGet---")
 camera = ScepterTofCam()
 
-
 camera_count = camera.scGetDeviceCount(3000)
-print("Get device count:", camera_count)
+print("[scGetDeviceCount] success, ScStatus(0), The device count is {}".format(camera_count))
 if camera_count <= 0:
-    print("scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.")
-    exit()
+    print("[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.")
+    exit(1)
 
 device_info=ScDeviceInfo()
 
@@ -23,109 +22,125 @@ if camera_count > 0:
     ret,device_infolist=camera.scGetDeviceInfoList(camera_count)
     if ret==0:
         device_info = device_infolist[0]
+        print("[scGetDeviceInfoList] success, ScStatus({}). The first deviceInfo, <serialNumber>: {} , <ip>: {} , <status>: {}".format(ret, str(device_info.serialNumber.decode()), str(device_info.ip.decode()), str(device_info.status)))
+        if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
+            print(" The first device [status]: {} does not support connection.".format(str(device_info.status)))
+            exit(1)
     else:
-        print(' failed:' + ret)  
-        exit()  
+        print("[scGetDeviceInfoList] fail, ScStatus({})".format(ret))
+        exit(1) 
 else: 
     print("there are no camera found")
-    exit()
-
-if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-	print("connect status:",device_info.status)  
-	print("Call scOpenDeviceBySN with connect status :",ScConnectStatus.SC_CONNECTABLE.value)
-	exit()
-else:
-    print("serialNumber: "+str(device_info.serialNumber))
-    print("ip: "+str(device_info.ip))
-    print("connectStatus: "+str(device_info.status))
+    exit(1)
 
 ret = camera.scOpenDeviceBySN(device_info.serialNumber)
 if  ret == 0:
-    print("scOpenDeviceBySN")
+    print('[scOpenDeviceBySN] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scOpenDeviceBySN failed: ' + str(ret))   
+    print('[scOpenDeviceBySN] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret = camera.scStartStream()
 if  ret == 0:
-    print("scStartStream successful")
+    print('[scStartStream] success ScStatus({}).'.format(str(ret)))
 else:
-    print("scStartStream failed:"+ str(ret))   
- 
+    print('[scStartStream] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
+
+print("\n---1. Test TimeFilter---")
 ret,params = camera.scGetTimeFilterParams()
 if  ret == 0:
-    print("The default TimeFilter switch is " + str(params.enable))
+    print('[scGetTimeFilterParams] success ScStatus({}). The default time filter switch is {} .'.format(str(ret), str(params.enable)))
 else:
-    print("scGetTimeFilterParams failed:"+ str(ret))   
+    print('[scGetTimeFilterParams] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 params.enable = not params.enable
 ret = camera.scSetTimeFilterParams(params)
 if  ret == 0:
-    print("Set TimeFilter switch to "+ str(params.enable) + " is Ok")   
+    print('[scSetTimeFilterParams] success ScStatus({}). Set TimeFilter switch to {} is OK.'.format(str(ret), str(params.enable)))
 else:
-    print("scSetTimeFilterParams failed:"+ str(ret))   
+    print('[scSetTimeFilterParams] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
+print("\n---2. Test ConfidenceFilter---")
 ret,params = camera.scGetConfidenceFilterParams()
 if  ret == 0:
-    print("The default ConfidenceFilter switch is " + str(params.enable))
+    print('[scGetConfidenceFilterParams] success ScStatus({}). The default ConfidenceFilter switch is {} .'.format(str(ret), str(params.enable)))
 else:
-    print("scGetConfidenceFilterParams failed:"+ str(ret))   
+    print('[scGetConfidenceFilterParams] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 params.enable = not params.enable
 ret = camera.scSetConfidenceFilterParams(params)
 if  ret == 0:
-    print("Set ConfidenceFilter switch to "+ str(params.enable) + " is Ok")   
+    print('[scSetConfidenceFilterParams] success ScStatus({}). Set ConfidenceFilter switch to {} is OK.'.format(str(ret), str(params.enable)))
 else:
-    print("scSetConfidenceFilterParams failed:"+ str(ret))   
+    print('[scSetConfidenceFilterParams] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
+print("\n---3. Test FlyingPixelFilter---")
 ret,params = camera.scGetFlyingPixelFilterParams()
 if  ret == 0:
-    print("The default FlyingPixelFilter switch is " + str(params.enable))
+    print('[scGetFlyingPixelFilterParams] success ScStatus({}). The default flying pixel filter switch is {}.'.format(str(ret), str(params.enable)))
 else:
-    print("scGetFlyingPixelFilterParams failed:"+ str(ret))   
+    print('[scGetFlyingPixelFilterParams] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 params.enable = not params.enable
 ret = camera.scSetFlyingPixelFilterParams(params)
 if  ret == 0:
-    print("Set FlyingPixelFilter switch to "+ str(params.enable) + " is Ok")   
+    print('[scSetFlyingPixelFilterParams] success ScStatus({}). Set flying pixel filter switch to {} is OK.'.format(str(ret), str(params.enable)))
 else:
-    print("scSetFlyingPixelFilterParams failed:"+ str(ret))   
+    print('[scSetFlyingPixelFilterParams] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
+print("\n---4. Test FillHoleFilter---")
 ret,enable = camera.scGetFillHoleFilterEnabled()
 if  ret == 0:
-    print("The default FillHoleFilter switch is " + str(enable))
+    print('[scGetFillHoleFilterEnabled] success ScStatus({}). The default fill hole filter switch is {}.'.format(str(ret), str(enable)))
 else:
-    print("scGetFillHoleFilterEnabled failed:"+ str(ret))   
+    print('[scGetFillHoleFilterEnabled] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 enable = not enable
 ret = camera.scSetFillHoleFilterEnabled(enable)
 if  ret == 0:
-    print("Set FillHoleFilter switch to "+ str(enable) + " is Ok")   
+    print('[scSetFillHoleFilterEnabled] success ScStatus({}). Set flying pixel filter switch to {} is OK.'.format(str(ret), str(enable)))
 else:
-    print("scSetFillHoleFilterEnabled failed:"+ str(ret))   
+    print('[scSetFillHoleFilterEnabled] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
+print("\n---5. Test SpatialFilter---")
 ret,enable = camera.scGetSpatialFilterEnabled()
 if  ret == 0:
-    print("The default SpatialFilter switch is " + str(enable))
+    print('[scGetSpatialFilterEnabled] success ScStatus({}). The default spatial filter switch is {}.'.format(str(ret), str(enable)))
 else:
-    print("scGetSpatialFilterEnabled failed:"+ str(ret))   
+    print('[scGetSpatialFilterEnabled] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 enable = not enable
 ret = camera.scSetSpatialFilterEnabled(enable)
 if  ret == 0:
-    print("Set SpatialFilter switch to "+ str(enable) + " is Ok")   
+    print('[scSetSpatialFilterEnabled] success ScStatus({}). Set spatial filter switch to {} is OK.'.format(str(ret), str(enable)))
 else:
-    print("scSetSpatialFilterEnabled failed:"+ str(ret))   
+    print('[scSetSpatialFilterEnabled] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret = camera.scStopStream()
 if  ret == 0:
-    print("stopstream success")
+    print('[scStopStream] success ScStatus({}).'.format(str(ret)))
 else:
-    print("stopstream failed",ret)
+    print('[scStopStream] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
-ret = camera.scCloseDevice()     
+ret = camera.scCloseDevice()
 if  ret == 0:
-    print("scCloseDevice successful")
+    print('[scCloseDevice] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scCloseDevice failed: ' + str(ret)) 
+    print('[scCloseDevice] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
     
-print('Test end, please reboot camera to restore the default settings')  
+
+
+exit(0)

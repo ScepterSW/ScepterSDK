@@ -14,7 +14,7 @@ Point g_TransPos(800, 600);
 int g_Slope = 7495;
 bool g_IsSavePointCloud = false;
 
-static const cv::Point2i TransformedDepthPoint[4] = {{160, 120}, {480, 120}, {160, 360},{480, 360}};
+cv::Point2i TransformedDepthPoint[4] = {{160, 120}, {480, 120}, {160, 360},{480, 360}};
 
 bool InitDevice(const int deviceCount);
 void ShowMenu();
@@ -39,7 +39,7 @@ void on_TransMouseHandle(int event, int x, int y, int flags, void * param)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	uint32_t deviceCount = 0;
 	
@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "scInitialize failed!" << endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return -1;
 	}
 
@@ -55,14 +58,20 @@ int main(int argc, char *argv[])
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "scGetDeviceCount failed!" << endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return -1;
 	}
 	cout << "Get device count: " << deviceCount << endl;
 	if (0 == deviceCount)
 	{
 		cout << "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples."<< endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return -1;
 	}
 
@@ -78,6 +87,7 @@ int main(int argc, char *argv[])
 	const string depthImageWindow = "Depth Image";
     const string colorImageWindow = "Color Image";
 	const string transformedDepthWindow = "TransformedDepth";
+	const string transformedColorWindow = "TransformedColor";
 	cv::namedWindow(depthImageWindow, cv::WINDOW_AUTOSIZE);
 	cv::namedWindow(irImageWindow, cv::WINDOW_AUTOSIZE);
 	cv::namedWindow(colorImageWindow, cv::WINDOW_AUTOSIZE);
@@ -85,6 +95,9 @@ int main(int argc, char *argv[])
 	setMouseCallback(irImageWindow, on_MouseHandle, nullptr);
 	bool isTransformedDepthPointToColorPointEnable = false;
 	ScVector2u16 colorFrameWH = {640,480};
+	ScVector2u16 tofFrameWH = { 640,480 };
+	Point t_Pos(320, 240);
+	cv::Point2i t_TransformedDepthPoint[4] = { {160, 120}, {480, 120}, {160, 360},{480, 360} };
 
 	for (;;)
 	{
@@ -106,6 +119,19 @@ int main(int argc, char *argv[])
 
 			if (depthFrame.pFrameData != NULL)
 			{
+				if (tofFrameWH.x != depthFrame.width)
+				{
+					tofFrameWH.x = depthFrame.width;
+					tofFrameWH.y = depthFrame.height;
+				}
+
+				if (g_Pos.x != t_Pos.x ||g_Pos.y != t_Pos.y)
+				{
+					if (g_Pos.x < tofFrameWH.x &&g_Pos.y < tofFrameWH.y)
+					{
+						t_Pos = g_Pos;
+					}
+				}
 				if (true == g_IsSavePointCloud)
 				{
 					g_IsSavePointCloud = (1 == frameReady.transformedDepth) ? true : false;
@@ -121,31 +147,40 @@ int main(int argc, char *argv[])
                 index++;
                 if (diff > cv::getTickFrequency())
                 {
-                    fps = index * cv::getTickFrequency() / diff;
+                    fps = (float)(index * cv::getTickFrequency() / diff);
                     index = 0;
                     start = current;
                 }
 
 				if(true == isTransformedDepthPointToColorPointEnable)
 				{
+					if (TransformedDepthPoint[3].x < tofFrameWH.x&&TransformedDepthPoint[3].y < tofFrameWH.y)
+					{
+						for (size_t i = 0; i < 4; i++)
+						{
+							t_TransformedDepthPoint[i].x = TransformedDepthPoint[i].x;
+							t_TransformedDepthPoint[i].y = TransformedDepthPoint[i].y;
+						}
+					}
+
 					cv::Mat depthMat = cv::Mat(depthFrame.height, depthFrame.width, CV_16UC1, depthFrame.pFrameData);
 					for (size_t i = 0; i < sizeof(TransformedDepthDepthVector)/sizeof(TransformedDepthDepthVector[0]); i++)
 					{
-						TransformedDepthDepthVector[i].depthX = TransformedDepthPoint[i].x;
-						TransformedDepthDepthVector[i].depthY = TransformedDepthPoint[i].y;
-						TransformedDepthDepthVector[i].depthZ = depthMat.at<uint16_t>(TransformedDepthPoint[i]);
+						TransformedDepthDepthVector[i].depthX = t_TransformedDepthPoint[i].x;
+						TransformedDepthDepthVector[i].depthY = t_TransformedDepthPoint[i].y;
+						TransformedDepthDepthVector[i].depthZ = depthMat.at<uint16_t>(t_TransformedDepthPoint[i]);
 					}
 				}
 
 				//Display the Depth Image
-				Opencv_Depth(g_Slope, depthFrame.height, depthFrame.width, depthFrame.pFrameData, imageMat,g_Pos);
+				Opencv_Depth(g_Slope, depthFrame.height, depthFrame.width, depthFrame.pFrameData, imageMat, t_Pos);
                 char text[30] = "";
                 sprintf(text, "%.2f", fps);
                 putText(imageMat, text, Point(0, 15), FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
 
 				if(true == isTransformedDepthPointToColorPointEnable)
 				{
-					cv::rectangle(imageMat, TransformedDepthPoint[0], TransformedDepthPoint[3], Scalar(255, 255, 255));
+					cv::rectangle(imageMat, t_TransformedDepthPoint[0], t_TransformedDepthPoint[3], Scalar(255, 255, 255));
 				}
 				cv::imshow(depthImageWindow, imageMat);
 			}
@@ -175,7 +210,7 @@ int main(int argc, char *argv[])
 				index++;
 				if (diff > cv::getTickFrequency())
 				{
-					fps = index * cv::getTickFrequency() / diff;
+					fps = (float)(index * cv::getTickFrequency() / diff);
 					index = 0;
 					start = current;
 				}
@@ -209,7 +244,7 @@ int main(int argc, char *argv[])
                 index++;
                 if (diff > cv::getTickFrequency())
                 {
-                    fps = index * cv::getTickFrequency() / diff;
+                    fps = (float)(index * cv::getTickFrequency() / diff);
                     index = 0;
                     start = current;
                 }
@@ -217,10 +252,10 @@ int main(int argc, char *argv[])
 				//Display the IR Image
                 char text[30] = "";
                 imageMat = cv::Mat(irFrame.height, irFrame.width, CV_8UC1, irFrame.pFrameData);
-                sprintf(text, "%d", imageMat.at<uint8_t>(g_Pos));
+				sprintf(text, "%d", imageMat.at<uint8_t>(t_Pos));
 
 				Scalar color = Scalar(0, 0, 0);
-                if (imageMat.at<uint8_t>(g_Pos) > 128)
+                if (imageMat.at<uint8_t>(t_Pos) > 128)
                 {
 					color = Scalar(0, 0, 0);
                 }
@@ -229,8 +264,8 @@ int main(int argc, char *argv[])
 					color = Scalar(255, 255, 255);
                 }
 
-				circle(imageMat, g_Pos, 4, color, -1, 8, 0);
-				putText(imageMat, text, g_Pos, FONT_HERSHEY_DUPLEX, 2, color);
+				circle(imageMat, t_Pos, 4, color, -1, 8, 0);
+				putText(imageMat, text, t_Pos, FONT_HERSHEY_DUPLEX, 2, color);
 
                 memset(text, 0, sizeof(text));
                 sprintf(text, "%.2f", fps);
@@ -261,7 +296,7 @@ int main(int argc, char *argv[])
                 index++;
                 if (diff > cv::getTickFrequency())
                 {
-                    fps = index * cv::getTickFrequency() / diff;
+                    fps = (float)(index * cv::getTickFrequency() / diff);
                     index = 0;
                     start = current;
                 }
@@ -323,7 +358,7 @@ int main(int argc, char *argv[])
 				index++;
 				if (diff > cv::getTickFrequency())
 				{
-					fps = index * cv::getTickFrequency() / diff;
+					fps = (float)(index * cv::getTickFrequency() / diff);
 					index = 0;
 					start = current;
 				}
@@ -335,7 +370,7 @@ int main(int argc, char *argv[])
 				sprintf(text, "%.2f", fps);
 				putText(imageMat, text, Point(0, 15), FONT_HERSHEY_PLAIN, 1, Scalar(255, 255, 255));
 
-				cv::imshow("TransformedColor", imageMat);
+				cv::imshow(transformedColorWindow, imageMat);
 			}
 			else
 			{
@@ -385,6 +420,60 @@ int main(int argc, char *argv[])
             }
             
         }
+		else if (key == 'D' || key == 'd')
+		{
+			cout << "please select ToF resolution to set: 0:320*240; 1:640*480" << endl;
+			int index = 0;
+			cin >> index;
+			if (cin.fail())
+			{
+				std::cout << "Unexpected input" << endl;
+				cin.clear();
+				cin.ignore(1024, '\n');
+				continue;
+			}
+			else
+			{
+				cin.clear();
+				cin.ignore(1024, '\n');
+			}
+
+			switch (index)
+			{
+			case 0:
+				if (tofFrameWH.x == 640)
+				{
+					g_Pos.x = g_Pos.x * 320 / tofFrameWH.x;
+					g_Pos.y = g_Pos.y * 240 / tofFrameWH.y;
+
+					for (size_t i = 0; i < 4; i++)
+					{
+						TransformedDepthPoint[i].x = TransformedDepthPoint[i].x * 320 / tofFrameWH.x;
+						TransformedDepthPoint[i].y = TransformedDepthPoint[i].y * 320 / tofFrameWH.x;
+					}
+				}
+				scSetToFResolution(g_DeviceHandle, 320, 240);
+				break;
+			case 1:
+				if (tofFrameWH.x == 320)
+				{
+					g_Pos.x = g_Pos.x * 640 / tofFrameWH.x;
+					g_Pos.y = g_Pos.y * 480 / tofFrameWH.y;
+
+					for (size_t i = 0; i < 4; i++)
+					{
+						TransformedDepthPoint[i].x = TransformedDepthPoint[i].x * 640 / tofFrameWH.x;
+						TransformedDepthPoint[i].y = TransformedDepthPoint[i].y * 640 / tofFrameWH.x;
+					}
+				}
+				scSetToFResolution(g_DeviceHandle, 640, 480);
+				break;
+			default:
+				cout << "input is invalid." << endl;
+				break;
+			}
+
+		}
 		else if (key == 'P' || key == 'p')
 		{
 			g_IsSavePointCloud = true;
@@ -451,7 +540,10 @@ bool InitDevice(const int deviceCount)
 	if (status != ScStatus::SC_OK)
 	{
 		cout << "OpenDevice failed!" << endl;
-		system("pause");
+		if (system("pause") == -1)
+		{
+			cout << "system pause failed!" << endl;
+		}
 		return false;
 	}
     
@@ -485,6 +577,20 @@ bool InitDevice(const int deviceCount)
     //Wait for the device to upload image data
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
+	int32_t t_W = 0;
+	int32_t t_H = 0;
+	scGetToFResolution(g_DeviceHandle, &t_W, &t_H);
+	if (g_Pos.x == t_W&&g_Pos.y == t_H)
+	{
+		g_Pos.x = g_Pos.x / 2;
+		g_Pos.y = g_Pos.y / 2;
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			TransformedDepthPoint[i].x = TransformedDepthPoint[i].x / 2;
+			TransformedDepthPoint[i].y = TransformedDepthPoint[i].y / 2;
+		}
+	}
  	return true;
 }
 
@@ -497,6 +603,9 @@ void ShowMenu()
     cout << "                             0: 640 * 480" << endl;
     cout << "                             1: 800 * 600" << endl;
     cout << "                             2: 1600 * 1200" << endl;
+	cout << "D/d: Change the ToF resolution: input corresponding index in terminal:" << endl;
+	cout << "                             0: 320*240" << endl;
+	cout << "                             1: 640 * 480" << endl;
 	cout << "P/p: Save point cloud data into PointCloud.txt in current directory" << endl;
     cout << "Q/q: Enables or disables transforms a color image into the geometry of the depth camera" << endl;
     cout << "L/l: Enables or disables transforms the depth map into the geometry of the color camera" << endl;
@@ -510,6 +619,11 @@ static void Opencv_Depth(uint32_t slope, int height, int width, uint8_t*pData, c
 {
 	dispImg = cv::Mat(height, width, CV_16UC1, pData);
 	Point2d pointxy = point;	
+	if (point.x >= width || point.y >= height)
+	{
+		pointxy.x = point.x / 2;
+		pointxy.y = point.y / 2;
+	}
 	int val = dispImg.at<ushort>(pointxy);
 	char text[20];
 #ifdef _WIN32

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.1.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* </c>
+<c>* Example for the usage of a Vzense 3D camera in HALCON.</c>
+<c>* </c>
+<c>* This sample shows how to set wdr range exposure time.</c>
+<c></c>
+<c>* Please note that you first need to install the matching Vzense</c>
+<c>* GenTL Producer. After this, you can access the camera with the</c>
+<c>* HALCON GenICamTL interface.</c>
+<c>*</c>
+<l>dev_close_window()</l>
+<l>dev_update_off()</l>
+<c>*</c>
+<l>info_framegrabber ('GenICamTL', 'info_boards', Information, DeviceList)</l>
+<l>tuple_regexp_select (DeviceList, 'sceptergentl.cti', Device)</l>
+<l>if (Device == [])</l>
+<c>     * No Vzense camera found</c>
+<l>    stop ()</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    open_file('ToFExposureTimeOfWDRSetGet.txt', 'output', FileHandle)</l>
+<l>    fwrite_string(FileHandle, '---ToFExposureTimeOfWDRSetGet---\n')</l>
+<l>    tuple_regexp_match(Device[0], 'user_name:([^|]+)', user_name)</l>
+<l>    fwrite_string(FileHandle, 'The first deviceInfo, &lt;serialNumber&gt;: '+ user_name +'\n')</l>
+<l>    open_framegrabber ('GenICamTL', 1, 1, 0, 0, 0, 0, 'default', -1, 'default', -1, 'false', 'default', Device[0], -1, -1, AcqHandle)</l>
+<l>    fwrite_string(FileHandle, 'Open framegrabber success.\n')</l>
+<c></c>
+<c>    * Set framerate</c>
+<l>    frameRate:=5</l>
+<l>    set_framegrabber_param(AcqHandle, 'AcquisitionFrameRateEnable', true)</l>
+<l>    set_framegrabber_param(AcqHandle, 'AcquisitionFrameRate', frameRate)</l>
+<l>    fwrite_string(FileHandle, 'Set the device frame rate to ' + frameRate +'\n')</l>
+<c>    *WDR</c>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureMode', 'Timed')</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTimeMode', 'Individual')</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTimeSelector', ExposureTimeSelector)</l>
+<l>    if(ExposureTimeSelector == 'HDR')</l>
+<c>        * disable hdr</c>
+<l>        set_framegrabber_param(AcqHandle, 'MultiSlopeMode', 'Off')</l>
+<l>    endif</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTimeSelector', 'WDR')</l>
+<l>    get_framegrabber_param(AcqHandle, 'MultiSlopeMode', MultiSlopeMode)</l>
+<l>    if(MultiSlopeMode == 'Manual')</l>
+<l>        fwrite_string(FileHandle, 'Get WDR mode status: true \n')</l>
+<l>    else</l>
+<l>        fwrite_string(FileHandle, 'Get WDR mode status: false \n')</l>
+<l>        get_framegrabber_param(AcqHandle, 'ExposureAuto', ExposureAuto)</l>
+<l>        if(ExposureAuto == 'Off')</l>
+<l>            fwrite_string(FileHandle, 'Get exposure control mode:: SC_EXPOSURE_CONTROL_MODE_MANUAL\n')</l>
+<l>        else</l>
+<l>            fwrite_string(FileHandle, 'Get exposure control mode:: SC_EXPOSURE_CONTROL_MODE_AUTO\n')</l>
+<l>            set_framegrabber_param(AcqHandle, 'ExposureAuto', 'Off')</l>
+<l>            fwrite_string(FileHandle, 'Set SC_EXPOSURE_CONTROL_MODE_MANUAL success.\n')</l>
+<l>        endif</l>
+<l>        set_framegrabber_param(AcqHandle, 'MultiSlopeMode', 'Manual')</l>
+<l>        fwrite_string(FileHandle, 'Enabled WDR mode.\n')</l>
+<l>    endif</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTime_range', ExposureTimeRange)</l>
+<l>    get_framegrabber_param(AcqHandle, 'MultiSlopeKneePointCount', MultiSlopeKneePointCount)</l>
+<l>    fwrite_string(FileHandle, 'Get WDR mode fame count: '+ MultiSlopeKneePointCount +'\n')</l>
+<l>    ExposureTimeStep:= 25</l>
+<l>    for index:=0 to MultiSlopeKneePointCount-1 by 1</l>
+<c>        * set wdr range index</c>
+<l>        set_framegrabber_param(AcqHandle, 'MultiSlopeKneePointSelector', index)</l>
+<l>        get_framegrabber_param(AcqHandle, 'ExposureTime', CurrentExposureTime)</l>
+<l>        fwrite_string(FileHandle, 'Get frame count: ' + index + ' current WDR exposure time: ' + CurrentExposureTime +'\n')</l>
+<l>        ExposureTimePercent:= ExposureTimeStep * (index + 1)</l>
+<c>        * set wdr range index expousre time to 0.25 * ExposureTime</c>
+<l>        set_framegrabber_param(AcqHandle, 'MultiSlopeExposureLimitTime', ExposureTimePercent)</l>
+<l>        ExposureTimeVal:=((ExposureTimeStep) * ExposureTimeRange[1]) / 100</l>
+<l>        fwrite_string(FileHandle, 'Set frame count: ' + index + ' WDR exposure time: ' + ExposureTimeVal +'\n')</l>
+<l>    endfor</l>
+<c>    * close devices</c>
+<l>    close_framegrabber (AcqHandle)</l>
+<l>    fwrite_string(FileHandle, 'Close framegrabber success.\n')</l>
+<l>    fwrite_string(FileHandle, '---End---\n')</l>
+<l>    close_file(FileHandle)</l>
+<l>catch(Exception)</l>
+<l>     dev_get_exception_data (Exception, 'error_code', error_code)</l>
+<l>     dev_get_exception_data (Exception, 'error_msg', errorMsg)</l>
+<l>     dev_get_exception_data (Exception, 'add_error_message', add_error_message)</l>
+<l>     dev_get_exception_data (Exception, 'program_line', program_line)</l>
+<l>     dev_get_exception_data (Exception, 'operator', operator)</l>
+<l>     outPutMsg:= add_error_message + ' Operator: ' + operator + ' ErrorMsg: ' + errorMsg + ' ErrorCode: ' + error_code + ' Line: ' + program_line</l>
+<l>     fwrite_string(FileHandle, outPutMsg + '\n')</l>
+<l>     close_framegrabber (AcqHandle)</l>
+<l>     close_file(FileHandle)</l>
+<l>     stop()</l>
+<l>endtry</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="disp_current_image">
+<interface>
+<io>
+<par name="Images" base_type="iconic" dimension="0"/>
+</io>
+<ic>
+<par name="Index" base_type="ctrl" dimension="0"/>
+<par name="WindowHandle" base_type="ctrl" dimension="0"/>
+<par name="Title" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>select_obj (Images, Image, Index)</l>
+<l>dev_set_window (WindowHandle)</l>
+<l>if (strstr(Title, 'IR') == 0)</l>
+<l>   dev_set_lut('inv_sqrt')</l>
+<l>endif</l>
+<l>dev_display (Image)</l>
+<l>dev_disp_text (Title, 'window', 12, 12, 'black', [], [])</l>
+<l>return ()</l>
+</body>
+<docu id="disp_current_image">
+<parameters>
+<parameter id="Images"/>
+<parameter id="Index"/>
+<parameter id="Title"/>
+<parameter id="WindowHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="create_3d_window">
+<interface>
+<ic>
+<par name="Width" base_type="ctrl" dimension="0"/>
+<par name="Height" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Window3DHande" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>            dev_open_window (0, 2*Width, Width, Height, 'black', Window3DHande)</l>
+<l>            dev_set_window (Window3DHande)</l>
+<l>            dev_set_lut('default')</l>
+<l>return ()</l>
+</body>
+<docu id="create_3d_window">
+<parameters>
+<parameter id="Height"/>
+<parameter id="Width"/>
+<parameter id="Window3DHande"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

@@ -3,6 +3,8 @@
 //define call back function
 void ScepterManager::paramCallback(scepter_param::Sceptertof_roscppConfig& config,uint32_t level)
 {
+    ros::Time now = ros::Time::now();
+    ROS_INFO_STREAM("paramCallback called" << " Time " << (long long)(now.toSec() * 1000));
     ROS_INFO("Request: %d %d %d %d %d %d %d %d %d %d %d %d",
                 config.FrameRate,
                 config.IRGMMGain,
@@ -16,6 +18,11 @@ void ScepterManager::paramCallback(scepter_param::Sceptertof_roscppConfig& confi
                 config.XDRMode,
                 config.DepthCloudPoint,
                 config.Depth2ColorCloudPoint);
+    if (deviceHandle_ == nullptr)
+    {
+        ROS_INFO_STREAM( "The deviceHandle is null for parameter callback.");
+        return;
+    }
 
     if(config_.XDRMode != config.XDRMode)
     {
@@ -119,23 +126,23 @@ void ScepterManager::paramCallback(scepter_param::Sceptertof_roscppConfig& confi
         }
         if(config_.ToFManual != 1)
         {
-          config_.ToFExposureTime = 0;  
+            config_.ToFExposureTime = 0;  
         }
     }
     if(config_.ToFExposureTime != config.ToFExposureTime&&config_.ToFManual==1)
     {
         config_.ToFExposureTime = config.ToFExposureTime;
         int exposureTime = 0;
-		int retry = 0;
-		while (0 == exposureTime && retry < 3)
+        int retry = 0;
+        while (0 == exposureTime && retry < 3)
         {
-			scGetMaxExposureTime(deviceHandle_, SC_TOF_SENSOR, &exposureTime);
+            scGetMaxExposureTime(deviceHandle_, SC_TOF_SENSOR, &exposureTime);
             retry++;
         }
         if (0 != exposureTime && config_.ToFExposureTime <= exposureTime)
         {
-			exposureTime = config_.ToFExposureTime;
-		}
+            exposureTime = config_.ToFExposureTime;
+        }
         else
         {
             ROS_INFO_STREAM( "SetExposureTime tof Max Value: " << exposureTime);
@@ -161,23 +168,23 @@ void ScepterManager::paramCallback(scepter_param::Sceptertof_roscppConfig& confi
         ROS_INFO_STREAM( "SetExposureControlMode color status: " << status);
         if(config_.ColorManual != 1)
         {
-          config_.ColorExposureTime = 0;  
+            config_.ColorExposureTime = 0;  
         }
     }
     if(config_.ColorExposureTime != config.ColorExposureTime&&config_.ColorManual==1)
     {
-		config_.ColorExposureTime = config.ColorExposureTime;
+        config_.ColorExposureTime = config.ColorExposureTime;
         int exposureTime = 0;
-		int retry = 0;
-		while (0 == exposureTime && retry < 3)
+        int retry = 0;
+        while (0 == exposureTime && retry < 3)
         {
-			scGetMaxExposureTime(deviceHandle_, SC_COLOR_SENSOR, &exposureTime);
+            scGetMaxExposureTime(deviceHandle_, SC_COLOR_SENSOR, &exposureTime);
             retry++;
         }
         if (0 != exposureTime && config_.ColorExposureTime <= exposureTime)
         {
-			exposureTime = config_.ColorExposureTime;
-		}
+            exposureTime = config_.ColorExposureTime;
+        }
         else
         {
             ROS_INFO_STREAM( "SetExposureTime color Max Value: " << exposureTime);
@@ -185,14 +192,47 @@ void ScepterManager::paramCallback(scepter_param::Sceptertof_roscppConfig& confi
         ScStatus status= scSetExposureTime(deviceHandle_,SC_COLOR_SENSOR,exposureTime);
         ROS_INFO_STREAM( "SetExposureTime color status: " << status);
     }
+
     if(config_.WorkMode != config.WorkMode)
     {
         config_.WorkMode = config.WorkMode;
-        ScStatus status= scSetWorkMode(deviceHandle_,(ScWorkMode)config_.WorkMode);
-        ROS_INFO_STREAM( "SetWorkMode status: " << status);
+        ScStatus status= scSetWorkMode(deviceHandle_, (ScWorkMode)config_.WorkMode);
+        if (status == ScStatus::SC_OK)
+        {
+            ROS_INFO_STREAM("Set work mode to " << config_.WorkMode);
+            if (config_.WorkMode != SC_SOFTWARE_TRIGGER_MODE)
+            {
+                isNeedSoftWareTrigger = false;
+            }
+        }
+        else
+        {
+            ROS_INFO_STREAM( "Set work mode failed: " << status);
+        }
     }
 
-    config_.SoftwareTrigger = config.SoftwareTrigger;
+	if (config_.SoftwareTrigger )
+	{
+		if (config_.WorkMode == SC_SOFTWARE_TRIGGER_MODE)
+		{
+			isNeedSoftWareTrigger = true;
+		}
+	}
+	else
+	{
+		if (config_.SoftwareTrigger != config.SoftwareTrigger)
+		{
+			config_.SoftwareTrigger = config.SoftwareTrigger;
+			if (config_.WorkMode == SC_SOFTWARE_TRIGGER_MODE)
+			{
+				isNeedSoftWareTrigger = true;
+			}
+			else
+			{
+				isNeedSoftWareTrigger = false;
+			}
+		}
+	}
 
     if(config_.DepthCloudPoint != config.DepthCloudPoint)
     {   
@@ -201,6 +241,26 @@ void ScepterManager::paramCallback(scepter_param::Sceptertof_roscppConfig& confi
     if(config_.Depth2ColorCloudPoint != config.Depth2ColorCloudPoint)
     {   
         config_.Depth2ColorCloudPoint = config.Depth2ColorCloudPoint;
+    }
+
+    if(isNeedSoftWareTrigger)
+    {
+        ros::Time now = ros::Time::now();
+        ROS_INFO_STREAM("SOFTWARE_TRIGGER called" << " Time " << (long long)(now.toSec() * 1000));
+        ScStatus status = scSoftwareTriggerOnce(deviceHandle_);
+        ScFrameReady psReadFrame = {0};
+        status = scGetFrameReady(deviceHandle_, 1200, &psReadFrame);
+        now = ros::Time::now();
+        ROS_INFO_STREAM("scGetFrameReady called" << " Time " << (long long)(now.toSec() * 1000));
+        if (status != SC_OK)
+        {
+            ROS_INFO_STREAM("scGetFrameReady failed" << status);
+        }
+        else
+        {
+            publishImage(psReadFrame);
+        }
+		isNeedSoftWareTrigger = false;
     }
 }
 
@@ -231,7 +291,8 @@ ScepterManager::ScepterManager(int32_t device_index, const string &camera_name) 
         deviceHandle_(0),
         sessionIndex_(0),
         hdrEnabled(false),
-        wdrEnabled(false)
+        wdrEnabled(false),
+        isNeedSoftWareTrigger(false)
 {
     signal(SIGSEGV, ScepterManager::sigsegv_handler);
 
@@ -242,13 +303,13 @@ ScepterManager::ScepterManager(int32_t device_index, const string &camera_name) 
     uint32_t device_count = 0;
 GET:
     int checkDeviceSec = 0;
-	ScStatus status = scGetDeviceCount(&device_count, 3000);
-	if (status != ScStatus::SC_OK || device_count < 1)
-	{
+    ScStatus status = scGetDeviceCount(&device_count, 3000);
+    if (status != ScStatus::SC_OK || device_count < 1)
+    {
         ROS_INFO("check device cost:%d second.", checkDeviceSec++);
         ros::Duration(1).sleep();
-		goto GET;	
-	}
+        goto GET;    
+    }
     ROS_INFO("Get device count: %d", device_count);
 
     // Verify device index selection
@@ -259,244 +320,213 @@ GET:
         throw std::runtime_error(
                 "Device index outside of available devices range 0-" + std::to_string(device_count));
         }
-       
-	ScDeviceInfo* pPsDeviceInfoList = new ScDeviceInfo[device_count];
-	status = scGetDeviceInfoList(device_count, pPsDeviceInfoList);
-	if (status != ScStatus::SC_OK)
-	{
-		ROS_INFO("scGetDeviceInfoList failed! %d", status);
-		delete[] pPsDeviceInfoList;
-		pPsDeviceInfoList = NULL;
-		goto GET;
-	}
 
-	ScDeviceInfo* pPsDeviceInfo = &pPsDeviceInfoList[0];
-
-    // Attempt to open the device
-    checkScStatus(scOpenDeviceBySN(pPsDeviceInfo->serialNumber, &deviceHandle_), "OpenDevice failed!");
-
-    ROS_INFO("Successfully connected to device %d", this->device_index_);
-
-    status= scStartStream(deviceHandle_);
-    ROS_INFO_STREAM( "Start Depth Frame status: " << status);
-    /* add user define api call start*/
-    // such as call the scSetSpatialFilterEnabled
-   
-    /*
-    status= scSetSpatialFilterEnabled(deviceHandle_,true);
-    ROS_INFO_STREAM( "SetSpatialFilterEnabled status: " << status);
-    */
-
-    // such as call the scSetParamsByJson     
-   
-    /*
-    char buffer[2048];
-    getcwd(buffer, sizeof(buffer));
-    string path(buffer);
-    path = path + "/parameter.json";
-    status = scSetParamsByJson(deviceHandle_, const_cast<char*>(path.c_str()));
+    ScDeviceInfo* pPsDeviceInfoList = new ScDeviceInfo[device_count];
+    status = scGetDeviceInfoList(device_count, pPsDeviceInfoList);
     if (status != ScStatus::SC_OK)
     {
-        ROS_INFO("scSetParamsByJson ret %d Please create json file at %s if you need it", status, const_cast<char*>(path.c_str()));
+        ROS_INFO("scGetDeviceInfoList failed! %d", status);
+        delete[] pPsDeviceInfoList;
+        pPsDeviceInfoList = NULL;
+        goto GET;
+    }
+
+    ScDeviceInfo* pPsDeviceInfo = &pPsDeviceInfoList[0];
+
+    // Attempt to open the device
+    status = scOpenDeviceBySN(pPsDeviceInfo->serialNumber, &deviceHandle_);
+    if (status != ScStatus::SC_OK)
+    {
+        ROS_INFO("OpenDevice failed! %d", status);
     }
     else
     {
-        ROS_INFO("Successfully load json %s", const_cast<char*>(path.c_str()));
-    }
-    */
-   
-    /* add user define api call end*/
+        ROS_INFO("Successfully connected to device %d", this->device_index_);
+        memset(frameArr, 0, sizeof(ScFrame) * 5);
+        status= scStartStream(deviceHandle_);
+        ROS_INFO_STREAM( "Start Depth Frame status: " << status);
+        /* add user define api call start*/
+        // such as call the scSetSpatialFilterEnabled
 
-    int rate=0;
-    status= scGetFrameRate(deviceHandle_,&rate);
-    config_.FrameRate=rate;
-    ROS_INFO_STREAM( "GetFrameRate status: " << status);
-    uint8_t gmmgain=0;
-    status= scGetIRGMMGain(deviceHandle_,&gmmgain);
-    config_.IRGMMGain = gmmgain;
-    ROS_INFO_STREAM( "GetIRGMMGain status: " << status);
-    
-    ScWorkMode mode;
-    status= scGetWorkMode(deviceHandle_,&mode);
-    config_.WorkMode= mode;
-    ROS_INFO_STREAM( "GetWorkMode status: " << status);
-    
-    {
-        ScExposureControlMode pControlMode;
-        status= scGetExposureControlMode(deviceHandle_,SC_TOF_SENSOR,&pControlMode);
-        config_.ToFManual = pControlMode;
-        ROS_INFO_STREAM( "GetExposureControlMode tof status: " << status);
+        /*
+        status= scSetSpatialFilterEnabled(deviceHandle_,true);
+        ROS_INFO_STREAM( "SetSpatialFilterEnabled status: " << status);
+        */
 
-        if(config_.ToFManual == SC_EXPOSURE_CONTROL_MODE_MANUAL)
-        {
-            int nExposureTime = 0;
-            status= scGetExposureTime(deviceHandle_,SC_TOF_SENSOR,&nExposureTime);
-            config_.ToFExposureTime = nExposureTime;
-            ROS_INFO_STREAM( "GetExposureTime ToF status: " << status);
-        }
-    }
-    {
-        ScExposureControlMode pControlMode;
-        status= scGetExposureControlMode(deviceHandle_,SC_COLOR_SENSOR,&pControlMode);
-        config_.ColorManual = pControlMode;
-        ROS_INFO_STREAM( "GetExposureControlMode color status: " << status);
-        if(pControlMode == SC_EXPOSURE_CONTROL_MODE_MANUAL)
-        {
-            int nExposureTime = 0;
-            status= scGetExposureTime(deviceHandle_,SC_COLOR_SENSOR,&nExposureTime);
-            config_.ColorExposureTime= nExposureTime;
-            ROS_INFO_STREAM( "GetExposureTime color status: " << status);
-        }
-    }
+        // such as call the scSetParamsByJson     
 
-    bool hdrEnable = false;
-    status = scGetHDRModeEnabled(deviceHandle_, &hdrEnable);
-    ROS_INFO_STREAM( "hdrEnable status: " << status << " hdrEnable " << hdrEnable);
-    bool wdrEnable = false;
-    status = scGetWDRModeEnabled(deviceHandle_, &wdrEnable);
-    ROS_INFO_STREAM( "wdrEnable status: " << status << " wdrEnable " << wdrEnable);
-    if (hdrEnable == false && wdrEnable == false)
-    {
-        config_.XDRMode = 0;
-    }
-    else if (hdrEnable == true && wdrEnable == false)
-    {
-        config_.XDRMode = 1;
-    }
-    else if (hdrEnable == false && wdrEnable == true)
-    {
-        config_.XDRMode = 2;
-    }
-    else
-    {
-        config_.XDRMode = -1;
-        ROS_ERROR("XDRMode init error");
-    }
-    config_.DepthCloudPoint = false;
-    config_.Depth2ColorCloudPoint = false;
-    ROS_INFO("ctl: %d %d %d %d %d %d %d %d %d %d %d",
-                config_.FrameRate,
-                config_.IRGMMGain,
-                config_.ColorResloution,
-                config_.ToFManual,
-                config_.ToFExposureTime,
-                config_.ColorManual,
-                config_.ColorExposureTime,
-                config_.WorkMode,
-                config_.XDRMode,
-                config_.DepthCloudPoint,
-                config_.Depth2ColorCloudPoint);
-}
- 
-void ScepterManager::run() 
-{
-    // Initialise ROS nodes
-    set_sensor_intrinsics();
+        /*
+        char buffer[2048];
+        getcwd(buffer, sizeof(buffer));
+        string path(buffer);
+        path = path + "/parameter.json";
+        status = scSetParamsByJson(deviceHandle_, const_cast<char*>(path.c_str()));
+        if (status != ScStatus::SC_OK)
+        {
+            ROS_INFO("scSetParamsByJson ret %d Please create json file at %s if you need it", status, const_cast<char*>(path.c_str()));
+        }
+        else
+        {
+            ROS_INFO("Successfully load json %s", const_cast<char*>(path.c_str()));
+        }
+        */
 
-    cameraInfo_Ary[0] = boost::make_shared<sensor_msgs::CameraInfo>(depth_info_->getCameraInfo());
-    cameraInfo_Ary[1] = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_->getCameraInfo());
-    cameraInfo_Ary[2] = boost::make_shared<sensor_msgs::CameraInfo>(color_info_->getCameraInfo());
-    cameraInfo_Ary[3] = boost::make_shared<sensor_msgs::CameraInfo>(alignedDepth_info_->getCameraInfo());
-    cameraInfo_Ary[4] = boost::make_shared<sensor_msgs::CameraInfo>(alignedColor_info_->getCameraInfo());
-    cameraInfo_Ary[5] = boost::make_shared<sensor_msgs::CameraInfo>(depth_point_cloud_info_->getCameraInfo());
-    cameraInfo_Ary[6] = boost::make_shared<sensor_msgs::CameraInfo>(depth2color_point_cloud_info_->getCameraInfo());
+        /* add user define api call end*/
 
-    // CameraPublisher 	advertiseCamera (const std::string &base_topic, uint32_t queue_size, bool latch=false)
-    this->color_pub_ = this->color_it_->advertiseCamera("image_raw", 30);
-    this->depth_pub_ = this->depth_it_->advertiseCamera("image_raw", 30);
-    this->ir_pub_ = this->ir_it_->advertiseCamera("image_raw", 30);
-    this->alignedDepth_pub_ = this->alignedDepth_it_->advertiseCamera("image_raw", 30);
-    this->alignedColor_pub_ = this->alignedColor_it_->advertiseCamera("image_raw", 30);
-    this->depthCloudPointPub_ = depthCloudPoint_nh_.advertise<sensor_msgs::PointCloud2>("cloud_points",30);
-    this->depth2colorCloudPointPub_ = depth2colorCloudPoint_nh_.advertise<sensor_msgs::PointCloud2>("cloud_points",30);
-    this->depthCloudPointCameraInfoPub_ = depthCloudPoint_nh_.advertise<sensor_msgs::CameraInfo>("camera_info",30);
-    this->depth2colorCloudPointCameraPub_ = depth2colorCloudPoint_nh_.advertise<sensor_msgs::CameraInfo>("camera_info",30);
-    
-    // Containers for frames
-    ScStatus status;
-    ros::Time now = ros::Time::now();
-    int missed_frames = 0;
+        int rate=0;
+        status= scGetFrameRate(deviceHandle_,&rate);
+        config_.FrameRate=rate;
+        ROS_INFO_STREAM( "GetFrameRate status: " << status);
+        uint8_t gmmgain=0;
+        status= scGetIRGMMGain(deviceHandle_,&gmmgain);
+        config_.IRGMMGain = gmmgain;
+        ROS_INFO_STREAM( "GetIRGMMGain status: " << status);
+        
+        ScWorkMode mode;
+        status= scGetWorkMode(deviceHandle_,&mode);
+        config_.WorkMode= mode;
+        ROS_INFO_STREAM( "GetWorkMode status: " << status);
+        
+        {
+            ScExposureControlMode pControlMode;
+            status= scGetExposureControlMode(deviceHandle_,SC_TOF_SENSOR,&pControlMode);
+            config_.ToFManual = pControlMode;
+            ROS_INFO_STREAM( "GetExposureControlMode tof status: " << status);
 
-    ScFrame frameArr[5];
-    memset(frameArr, 0,sizeof(ScFrame) * 5);
-
-    sensor_msgs::ImagePtr msg_Ary[5]; // depth_msg,ir_msg,color_msg,alignedDetph_msg,alignedColor_msg
-    image_transport::CameraPublisher pub_Ary[5] = {this->depth_pub_,this->ir_pub_,this->color_pub_,this->alignedDepth_pub_,this->alignedColor_pub_};
-    while (ros::ok()) {
-        ros::spinOnce();
-        // Get next frame set
-        if(config_.WorkMode == SC_SOFTWARE_TRIGGER_MODE && config_.SoftwareTrigger ==1)
-        {
-            scSoftwareTriggerOnce(deviceHandle_);
-        }
-        ScFrameReady psReadFrame = {0};
-        ScStatus status =  scGetFrameReady(deviceHandle_, 1200, &psReadFrame);
-        if (status != SC_OK)
-        {
-            continue;
-        }
-
-        now = ros::Time::now();
-        ScFrame frame = {0};
-        if (psReadFrame.depth == 1)
-        {
-            scGetFrame(deviceHandle_, SC_DEPTH_FRAME, &frame);
-            memcpy(&frameArr[0], &frame, sizeof(ScFrame));   
-        }
-        if (psReadFrame.ir == 1)
-        {
-            scGetFrame(deviceHandle_, SC_IR_FRAME, &frame);
-            memcpy(&frameArr[1], &frame, sizeof(ScFrame));  
-        }
-        if (psReadFrame.color == 1)
-        {
-            scGetFrame(deviceHandle_, SC_COLOR_FRAME, &frame);
-            memcpy(&frameArr[2], &frame, sizeof(ScFrame));  
-        }
-        if (psReadFrame.transformedDepth == 1)
-        {
-            scGetFrame(deviceHandle_, SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, &frame);
-            memcpy(&frameArr[3], &frame, sizeof(ScFrame));  
-        }
-        if (psReadFrame.transformedColor == 1)
-        {
-            scGetFrame(deviceHandle_, SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME, &frame);
-            memcpy(&frameArr[4], &frame, sizeof(ScFrame));  
-        }
-        bool ret = false;
-        for(int ind = 0; ind  < 5; ind++)
-        {
-            frame = frameArr[ind];
-            ScFrameType type = frame.frameType;
-            if (frame.pFrameData != NULL)
+            if(config_.ToFManual == SC_EXPOSURE_CONTROL_MODE_MANUAL)
             {
-                ret = fillImagePtr(now, type, frame, cameraInfo_Ary[ind], msg_Ary[ind]);
-                if(ret)
-                {
-                    pub_Ary[ind].publish(msg_Ary[ind],cameraInfo_Ary[ind]);
-                    if (config_.DepthCloudPoint == true && type == SC_DEPTH_FRAME)
-                    {
-                        publishCloudPoint(now, frame, depthCloudPointPub_, cameraInfo_Ary[5], nullptr);
-                    }
-                    if (config_.Depth2ColorCloudPoint == true && type == SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME)
-                    {
-                        publishCloudPoint(now, frame, depth2colorCloudPointPub_, cameraInfo_Ary[6], frameArr);
-                    }
-                }
-                else
-                {
-                    ROS_INFO_STREAM( "fill image failed for type : " << type );
-                }
+                int nExposureTime = 0;
+                status= scGetExposureTime(deviceHandle_,SC_TOF_SENSOR,&nExposureTime);
+                config_.ToFExposureTime = nExposureTime;
+                ROS_INFO_STREAM( "GetExposureTime ToF status: " << status);
             }
         }
-    }
+        {
+            ScExposureControlMode pControlMode;
+            status= scGetExposureControlMode(deviceHandle_,SC_COLOR_SENSOR,&pControlMode);
+            config_.ColorManual = pControlMode;
+            ROS_INFO_STREAM( "GetExposureControlMode color status: " << status);
+            if(pControlMode == SC_EXPOSURE_CONTROL_MODE_MANUAL)
+            {
+                int nExposureTime = 0;
+                status= scGetExposureTime(deviceHandle_,SC_COLOR_SENSOR,&nExposureTime);
+                config_.ColorExposureTime= nExposureTime;
+                ROS_INFO_STREAM( "GetExposureTime color status: " << status);
+            }
+        }
 
-    status = scStopStream(deviceHandle_);
-    ROS_INFO_STREAM( "Stop Depth Frame status: " << status);
-    status = scCloseDevice(&deviceHandle_);
-    ROS_INFO_STREAM( "CloseDevice status: " << status);
-    status = scShutdown();
-    ROS_INFO_STREAM( "Shutdown status: " << status );
+        bool hdrEnable = false;
+        status = scGetHDRModeEnabled(deviceHandle_, &hdrEnable);
+        ROS_INFO_STREAM( "hdrEnable status: " << status << " hdrEnable " << hdrEnable);
+        bool wdrEnable = false;
+        status = scGetWDRModeEnabled(deviceHandle_, &wdrEnable);
+        ROS_INFO_STREAM( "wdrEnable status: " << status << " wdrEnable " << wdrEnable);
+        if (hdrEnable == false && wdrEnable == false)
+        {
+            config_.XDRMode = 0;
+        }
+        else if (hdrEnable == true && wdrEnable == false)
+        {
+            config_.XDRMode = 1;
+        }
+        else if (hdrEnable == false && wdrEnable == true)
+        {
+            config_.XDRMode = 2;
+        }
+        else
+        {
+            config_.XDRMode = -1;
+            ROS_ERROR("XDRMode init error");
+        }
+        config_.SoftwareTrigger = 0;
+        config_.DepthCloudPoint = false;
+        config_.Depth2ColorCloudPoint = false;
+        ROS_INFO("ctl: %d %d %d %d %d %d %d %d %d %d %d",
+                    config_.FrameRate,
+                    config_.IRGMMGain,
+                    config_.ColorResloution,
+                    config_.ToFManual,
+                    config_.ToFExposureTime,
+                    config_.ColorManual,
+                    config_.ColorExposureTime,
+                    config_.WorkMode,
+                    config_.XDRMode,
+                    config_.DepthCloudPoint,
+                    config_.Depth2ColorCloudPoint);
+    }
+}
+
+void ScepterManager::run() 
+{
+    if (deviceHandle_ == nullptr)
+    {
+        ROS_INFO_STREAM( "Pending the process as deviceHandle is null.");
+        ros::spin();
+    }
+    else
+    {
+        // Initialise ROS nodes
+        set_sensor_intrinsics();
+
+        cameraInfo_Ary[0] = boost::make_shared<sensor_msgs::CameraInfo>(depth_info_->getCameraInfo());
+        cameraInfo_Ary[1] = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_->getCameraInfo());
+        cameraInfo_Ary[2] = boost::make_shared<sensor_msgs::CameraInfo>(color_info_->getCameraInfo());
+        cameraInfo_Ary[3] = boost::make_shared<sensor_msgs::CameraInfo>(alignedDepth_info_->getCameraInfo());
+        cameraInfo_Ary[4] = boost::make_shared<sensor_msgs::CameraInfo>(alignedColor_info_->getCameraInfo());
+        cameraInfo_Ary[5] = boost::make_shared<sensor_msgs::CameraInfo>(depth_point_cloud_info_->getCameraInfo());
+        cameraInfo_Ary[6] = boost::make_shared<sensor_msgs::CameraInfo>(depth2color_point_cloud_info_->getCameraInfo());
+
+        // CameraPublisher     advertiseCamera (const std::string &base_topic, uint32_t queue_size, bool latch=false)
+        this->color_pub_ = this->color_it_->advertiseCamera("image_raw", 30);
+        this->depth_pub_ = this->depth_it_->advertiseCamera("image_raw", 30);
+        this->ir_pub_ = this->ir_it_->advertiseCamera("image_raw", 30);
+        this->alignedDepth_pub_ = this->alignedDepth_it_->advertiseCamera("image_raw", 30);
+        this->alignedColor_pub_ = this->alignedColor_it_->advertiseCamera("image_raw", 30);
+        this->depthCloudPointPub_ = depthCloudPoint_nh_.advertise<sensor_msgs::PointCloud2>("cloud_points",30);
+        this->depth2colorCloudPointPub_ = depth2colorCloudPoint_nh_.advertise<sensor_msgs::PointCloud2>("cloud_points",30);
+        this->depthCloudPointCameraInfoPub_ = depthCloudPoint_nh_.advertise<sensor_msgs::CameraInfo>("camera_info",30);
+        this->depth2colorCloudPointCameraPub_ = depth2colorCloudPoint_nh_.advertise<sensor_msgs::CameraInfo>("camera_info",30);
+        
+        // Containers for frames
+        ScStatus status;
+        int missed_frames = 0;
+
+        //image_transport::CameraPublisher pub_Ary[5] = {this->depth_pub_,this->ir_pub_,this->color_pub_,this->alignedDepth_pub_,this->alignedColor_pub_};
+        pub_Ary[0] = this->depth_pub_;
+        pub_Ary[1] = this->ir_pub_;
+        pub_Ary[2] = this->color_pub_;
+        pub_Ary[3] = this->alignedDepth_pub_;
+        pub_Ary[4] = this->alignedColor_pub_;
+        while (ros::ok()) {
+            ros::spinOnce();
+            if(isNeedSoftWareTrigger || config_.WorkMode == SC_SOFTWARE_TRIGGER_MODE)
+            {
+                ros::Rate(config_.FrameRate * 5).sleep();
+                continue;
+            }
+            ScFrameReady psReadFrame = {0};
+            ScStatus status =  scGetFrameReady(deviceHandle_, 1200, &psReadFrame);
+            if (status != SC_OK)
+            {
+                if (config_.WorkMode == SC_HARDWARE_TRIGGER_MODE)
+                {
+                    ROS_INFO_STREAM("Waitting for hardware trigger. status " << status);
+                }
+                continue;
+            }
+            else
+            {
+                publishImage(psReadFrame);
+            }
+        }
+
+        status = scStopStream(deviceHandle_);
+        ROS_INFO_STREAM( "Stop Depth Frame status: " << status);
+        status = scCloseDevice(&deviceHandle_);
+        ROS_INFO_STREAM( "CloseDevice status: " << status);
+        status = scShutdown();
+        ROS_INFO_STREAM( "Shutdown status: " << status );
+    }
 }
 
 void ScepterManager::publishCloudPoint(const ros::Time& time, const ScFrame& srcFrame, ros::Publisher& pub, sensor_msgs::CameraInfoPtr& cameraInfoPtr, ScFrame* frameArr)
@@ -572,13 +602,11 @@ void ScepterManager::publishCloudPoint(const ros::Time& time, const ScFrame& src
     {
         this->depth2colorCloudPointCameraPub_.publish(cameraInfoPtr);
     }
-    //pub.publish(output_msg, cameraInfoPtr);
 }
 
 bool ScepterManager::fillImagePtr(const ros::Time& time, const ScFrameType type, ScFrame& frame,sensor_msgs::CameraInfoPtr& cameraInfoPtr, sensor_msgs::ImagePtr& imagePtr)
 {
     bool ret = false;
-
     if (frame.pFrameData != NULL)
     {
         int cvMatType = CV_16UC1;
@@ -595,7 +623,7 @@ bool ScepterManager::fillImagePtr(const ros::Time& time, const ScFrameType type,
             imageEncodeType = sensor_msgs::image_encodings::TYPE_16UC1;
             break;
         case SC_COLOR_FRAME:
- 	case SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME:
+        case SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME:
             cvMatType = CV_8UC3;
             imageEncodeType = sensor_msgs::image_encodings::BGR8;
             break;
@@ -612,6 +640,64 @@ bool ScepterManager::fillImagePtr(const ros::Time& time, const ScFrameType type,
     }
 
     return ret;
+}
+
+void ScepterManager::publishImage(const ScFrameReady& psReadFrame)
+{
+    ros::Time now = ros::Time::now();
+    memset(frameArr, 0, sizeof(ScFrame) * 5);
+    ScFrame frame = {0};
+    if (psReadFrame.depth == 1)
+    {
+        scGetFrame(deviceHandle_, SC_DEPTH_FRAME, &frame);
+        memcpy(&frameArr[0], &frame, sizeof(ScFrame));   
+    }
+    if (psReadFrame.ir == 1)
+    {
+        scGetFrame(deviceHandle_, SC_IR_FRAME, &frame);
+        memcpy(&frameArr[1], &frame, sizeof(ScFrame));  
+    }
+    if (psReadFrame.color == 1)
+    {
+        scGetFrame(deviceHandle_, SC_COLOR_FRAME, &frame);
+        memcpy(&frameArr[2], &frame, sizeof(ScFrame));  
+    }
+    if (psReadFrame.transformedDepth == 1)
+    {
+        scGetFrame(deviceHandle_, SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME, &frame);
+        memcpy(&frameArr[3], &frame, sizeof(ScFrame));  
+    }
+    if (psReadFrame.transformedColor == 1)
+    {
+        scGetFrame(deviceHandle_, SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME, &frame);
+        memcpy(&frameArr[4], &frame, sizeof(ScFrame));  
+    }
+    bool ret = false;
+    for(int ind = 0; ind  < 5; ind++)
+    {
+        frame = frameArr[ind];
+        ScFrameType type = frame.frameType;
+        if (frame.pFrameData != NULL)
+        {
+            ret = fillImagePtr(now, type, frame, cameraInfo_Ary[ind], msg_Ary[ind]);
+            if(ret)
+            {
+                pub_Ary[ind].publish(msg_Ary[ind],cameraInfo_Ary[ind]);
+                if (config_.DepthCloudPoint == true && type == SC_DEPTH_FRAME)
+                {
+                    publishCloudPoint(now, frame, depthCloudPointPub_, cameraInfo_Ary[5], nullptr);
+                }
+                if (config_.Depth2ColorCloudPoint == true && type == SC_TRANSFORM_DEPTH_IMG_TO_COLOR_SENSOR_FRAME)
+                {
+                    publishCloudPoint(now, frame, depth2colorCloudPointPub_, cameraInfo_Ary[6], frameArr);
+                }
+            }
+            else
+            {
+                ROS_INFO_STREAM( "fill image failed for type : " << type );
+            }
+        }
+    }
 }
 
 void ScepterManager::sigsegv_handler(int sig)
@@ -640,8 +726,7 @@ void ScepterManager::set_sensor_intrinsics()
                 depth2colorpoints_frame(this->camera_name_ + "_depth2colorpoints_frame");
 
     // Get camera parameters (extrinsic)
-    checkScStatus(scGetSensorExtrinsicParameters(deviceHandle_, &this->extrinsics_),
-                      "Could not get extrinsics!");
+    checkScStatus(scGetSensorExtrinsicParameters(deviceHandle_, &this->extrinsics_), "Could not get extrinsics!");
 
     // Setup tf broadcaster
     static tf2_ros::StaticTransformBroadcaster tf_broadcaster;
@@ -650,8 +735,8 @@ void ScepterManager::set_sensor_intrinsics()
     // PsCameraExtrinsicParameters to ROS transform
     tf::Transform transform;
     tf::Matrix3x3 rotation_matrix(extrinsics_.rotation[0], extrinsics_.rotation[1], extrinsics_.rotation[2],
-                                  extrinsics_.rotation[3], extrinsics_.rotation[4], extrinsics_.rotation[5],
-                                  extrinsics_.rotation[6], extrinsics_.rotation[7], extrinsics_.rotation[8]);
+                                extrinsics_.rotation[3], extrinsics_.rotation[4], extrinsics_.rotation[5],
+                                extrinsics_.rotation[6], extrinsics_.rotation[7], extrinsics_.rotation[8]);
     double roll, pitch, yaw;
     rotation_matrix.getRPY(roll, pitch, yaw);
     geometry_msgs::Quaternion orientation = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
@@ -693,17 +778,15 @@ void ScepterManager::set_sensor_intrinsics()
     tf_broadcaster.sendTransform(msg);
 
     // Get camera parameters (intrinsic)
-    checkScStatus(scGetSensorIntrinsicParameters(deviceHandle_, SC_TOF_SENSOR, &this->depth_intrinsics_),
-                      "Could not get depth intrinsics!");
-    checkScStatus(scGetSensorIntrinsicParameters(deviceHandle_, SC_COLOR_SENSOR, &this->color_intrinsics_),
-                      "Could not get color intrinsics!");
+    checkScStatus(scGetSensorIntrinsicParameters(deviceHandle_, SC_TOF_SENSOR, &this->depth_intrinsics_), "Could not get depth intrinsics!");
+    checkScStatus(scGetSensorIntrinsicParameters(deviceHandle_, SC_COLOR_SENSOR, &this->color_intrinsics_), "Could not get color intrinsics!");
 
     // Initialise camera info messages
     sensor_msgs::CameraInfo info_msg;
     info_msg.distortion_model = "plumb_bob";
     info_msg.header.frame_id = color_frame;
     info_msg.D = {color_intrinsics_.k1, color_intrinsics_.k2, color_intrinsics_.p1, color_intrinsics_.p2,
-                  color_intrinsics_.k3};
+                color_intrinsics_.k3};
     info_msg.K = {color_intrinsics_.fx, 0, color_intrinsics_.cx, 
                     0, color_intrinsics_.fy, color_intrinsics_.cy,
                     0, 0, 1};
@@ -723,7 +806,7 @@ void ScepterManager::set_sensor_intrinsics()
 
     info_msg.header.frame_id = depth_frame;
     info_msg.D = {depth_intrinsics_.k1, depth_intrinsics_.k2, depth_intrinsics_.p1, depth_intrinsics_.p2,
-                  depth_intrinsics_.k3};
+                depth_intrinsics_.k3};
     info_msg.K = {depth_intrinsics_.fx, 0, depth_intrinsics_.cx,
                     0, depth_intrinsics_.fy, depth_intrinsics_.cy,
                     0, 0, 1};
@@ -742,10 +825,8 @@ void ScepterManager::set_sensor_intrinsics()
 
     ROS_INFO("Successfully received intrinsic and extrinsic parameters for device %d", this->device_index_);
 
-    checkScStatus(scSetTransformColorImgToDepthSensorEnabled(deviceHandle_, true),
-                      "Could not SetTransformColorImgToDepthSensorEnabled!");
-    checkScStatus(scSetTransformDepthImgToColorSensorEnabled(deviceHandle_, true),
-                      "Could not SetTransformDepthImgToColorSensorEnabled!");
+    checkScStatus(scSetTransformColorImgToDepthSensorEnabled(deviceHandle_, true), "Could not SetTransformColorImgToDepthSensorEnabled!");
+    checkScStatus(scSetTransformDepthImgToColorSensorEnabled(deviceHandle_, true), "Could not SetTransformDepthImgToColorSensorEnabled!");
 }
 
 void ScepterManager::updateColorIntrinsicParameters()

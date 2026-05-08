@@ -1,4 +1,4 @@
-import os, platform, numpy
+import os, platform
 from ctypes import *
 from enum import Enum
 
@@ -82,5 +82,6 @@ class ScExposureControlMode(Enum):
 class ScAIModuleMode(Enum):
     AI_CONTINUOUS_RUN_MODE= 0x00
     AI_SINGLE_RUN_MODE = 0x01
+    AI_SINGLE_REPORT_MODE = 0x02
     
 

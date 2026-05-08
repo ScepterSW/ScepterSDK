@@ -21,7 +21,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -32,12 +32,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -50,7 +50,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -58,7 +58,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -76,7 +76,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scStartStream(deviceHandle);
@@ -87,7 +87,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	//Testing TOF exposure time requires turning off HDR and WDR in advance.
@@ -100,7 +100,7 @@ int main()
 	else
 	{
 		cout << "[scSetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	int defaultframeRate = 10;
@@ -112,7 +112,7 @@ int main()
 	else
 	{
 		cout << "[scGetFrameRate] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	int maxExposureTime = 0;
@@ -124,7 +124,7 @@ int main()
 	else
 	{
 		cout << "[scGetMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	int exposureTime = 400;
@@ -136,7 +136,7 @@ int main()
 	else
 	{
 		cout << "[scSetExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	cout << endl << "---2. Set frame rate to 5---" << endl;
@@ -149,7 +149,7 @@ int main()
 	else
 	{
 		cout << "[scSetFrameRate] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetMaxExposureTime(deviceHandle, SC_TOF_SENSOR, &maxExposureTime);
@@ -160,7 +160,7 @@ int main()
 	else
 	{
 		cout << "[scGetMaxExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	exposureTime = 500;
@@ -172,7 +172,7 @@ int main()
 	else
 	{
 		cout << "[scSetExposureTime] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << endl;
 
@@ -184,7 +184,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -195,7 +195,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -206,9 +206,9 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
-	cout << "---Please reboot camera to restore the default settings---" << endl;
+	
 	cout << "---End---" << endl;
 
 	return 0;

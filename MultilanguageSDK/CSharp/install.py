@@ -11,19 +11,7 @@ def pullSDK(system_config):
     print(curPath)
      
     # Windows
-    if system_config == 'x86' or system_config == 'X86':
-        shutil.move('.\\Bin\\x86\\ScepterSDK_CSharp.dll', r'.\\Samples\\ScepterSDK_CSharp.dll')
-        src = libpath + "\\Windows\\Bin\\x86"
-        dst = curPath + "\\Bin\\x86"
-        if os.path.exists(dst):
-            shutil.rmtree(dst)
-            
-        shutil.copytree(src, dst)
-        shutil.move('.\\Samples\\ScepterSDK_CSharp.dll', r'.\\Bin\\x86\\ScepterSDK_CSharp.dll')
-        print("pull x86 SDK success")
-
-    
-    elif system_config == 'x64' or system_config == 'X64':
+    if system_config == 'x64' or system_config == 'X64':
         shutil.move('.\\Bin\\x64\\ScepterSDK_CSharp.dll', r'.\\Samples\\ScepterSDK_CSharp.dll')
         src = libpath + "\\Windows\\Bin\\x64"
         dst = curPath + "\\Bin\\x64"

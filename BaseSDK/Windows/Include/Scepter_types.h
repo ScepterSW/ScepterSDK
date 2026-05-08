@@ -46,8 +46,8 @@ typedef struct
  */
 typedef struct
 {
-    int32_t width;
-    int32_t height;
+    uint16_t width;
+    uint16_t height;
 } ScResolution;
 
 /**
@@ -55,7 +55,7 @@ typedef struct
  */
 typedef struct
 {
-    int32_t      count;
+    uint8_t      count;
     ScResolution resolution[6];
 } ScResolutionList;
 
@@ -148,8 +148,8 @@ typedef struct
 
 typedef struct
 {
-    uint16_t width;                  //!< Range in [1,65535]. The width of input signal.
-    uint16_t interval;               //!< Range in [34000,65535]. The interval of input signal.
+    uint32_t width;                  //!< The width of input signal.
+    uint32_t interval;               //!< The interval of input signal.
     uint8_t  polarity;               //!< Range in [0,1]. 0 for active low; 1 for active high.
 } ScInputSignalParamsForHWTrigger;   //!< Input signal parameters for Hardware Trigger.
 
@@ -165,6 +165,20 @@ typedef struct
     uint8_t flag;     //!< 0: disable, 1: NTP, 2: PTP, only NTP needs the ip.
     uint8_t ip[16];   //!< just for NTP.
 } ScTimeSyncConfig;
+
+typedef struct
+{
+    uint8_t option;     //!< 0x01 The UART test process, 0x02 The GPIO test process.
+    uint8_t state;   //!< 0x00 Stop the process, 0x01 Start the process.
+} ScSetPeripheralTestControl;
+
+typedef struct
+{
+    uint8_t option;     //!< 0x01 Read UART test process, 0x02 Read GPIO test process.
+    uint8_t transferState;   //!< 0 failed 1 successed 2 in progress.
+    uint8_t errorCode;       //!< error code.
+    uint8_t transferProgress;       //!< progress.
+} ScGetPeripheralTestControl;
 
 #pragma pack(pop)
 

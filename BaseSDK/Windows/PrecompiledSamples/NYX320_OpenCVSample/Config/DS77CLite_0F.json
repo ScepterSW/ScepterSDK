@@ -1,0 +1,13 @@
+{
+    "productName": "DS77CLite",
+    "connectType":"socket",
+    "colorSensor": [
+        {
+            "type": "gc2053",
+            "resolutionList": ["1600_1200","800_600", "640_480"]
+        }    ],
+    "toFSensor": [
+        {
+            "type": "sony_cw_2022"
+        }]
+}

@@ -1,6 +1,8 @@
 ﻿#include <thread>
 #include <iostream>
 #include "Scepter_api.h"
+#include <fstream>
+#include <sstream>
 
 #define frameSpace 20
 using namespace std;
@@ -24,7 +26,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -35,12 +37,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -53,7 +55,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -61,7 +63,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
@@ -79,7 +81,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scStartStream(deviceHandle);
@@ -90,7 +92,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	//Wait for the device to upload image data.
@@ -104,7 +106,7 @@ int main()
 	else
 	{
 		cout << "[scSetTransformColorImgToDepthSensorEnabled] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	for (int i = 0; i < frameSpace; i++)
@@ -126,6 +128,20 @@ int main()
 			if (status == ScStatus::SC_OK)
 			{
 				cout << "[scGetFrame] success, ScStatus(" << status << "). SC_TRANSFORM_COLOR_IMG_TO_DEPTH_SENSOR_FRAME <frameIndex>: " << frame.frameIndex << endl;
+				static bool saveonce =false;
+				if(!saveonce)
+				{
+					stringstream framename;
+					framename << "TransformColorImgToDepthSensorFrame_" << frame.frameIndex << ".bin";
+					char fname[64];
+					framename >> fname;
+					ofstream file;
+					file.open(fname, ios::binary | ios::trunc);
+					file.write((char*)frame.pFrameData, frame.dataLen);
+					file.close();
+					cout << "Save TransformColorImgToDepthSensorFrame successful in " << fname << endl;
+					saveonce = true;
+				}
 			}
 			else
 			{
@@ -142,7 +158,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -153,7 +169,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -164,7 +180,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

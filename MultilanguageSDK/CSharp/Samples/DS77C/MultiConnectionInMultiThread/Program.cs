@@ -9,7 +9,7 @@ namespace MultiConnectionInMultiThread
     using ScDeviceHandle = System.IntPtr;
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             Console.WriteLine("---MultiConnectionInMultiThread---");
 
@@ -20,11 +20,15 @@ namespace MultiConnectionInMultiThread
 
             //SDK Initialize
             status = VNAPI.VN_Initialize();
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_Initialize failed status:" + status);
+                Console.WriteLine("[VN_Initialize] success ScStatus:(" + status + ").");
+            }
+            else
+            {
+                Console.WriteLine("[VN_Initialize] fail ScStatus:(" + status + ").");
                 Console.ReadKey(true);
-                return;
+                return 1;
             }
 
             //1.Search and notice the count of devices.
@@ -33,13 +37,16 @@ namespace MultiConnectionInMultiThread
             do
             {
                 status = VNAPI.VN_GetDeviceCount(ref deviceCount, 3000);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("VN_GetDeviceCount failed! make sure pointer valid or called VN_Initialize()");
-                    Console.ReadKey(true);
-                    return;
+                    Console.WriteLine("[VN_GetDeviceCount] success ScStatus:(" + status + "). The device count is " + deviceCount);
                 }
-                Console.WriteLine("Get device count: " + deviceCount);
+                else
+                {
+                    Console.WriteLine("[VN_GetDeviceCount] fail ScStatus:(" + status + ").");
+                    Console.ReadKey(true);
+                    return 1;
+                }
             } while (deviceCount < 2);
 
             ScDeviceHandle[] deviceHandle = new ScDeviceHandle[deviceCount];
@@ -48,17 +55,12 @@ namespace MultiConnectionInMultiThread
             status = VNAPI.VN_GetDeviceInfoList(deviceCount, pDeviceListInfo);
             if (status != ScStatus.SC_OK)
             {
-                Console.WriteLine("GetDeviceListInfo failed status:" + status);
-                return;
+                Console.WriteLine("[VN_GetDeviceInfoList] fail status:" + status);
+                return 1;
             }
             else
             {
-                if (ScConnectStatus.SC_CONNECTABLE != pDeviceListInfo[0].status)
-                {
-                    Console.WriteLine("connect status" + pDeviceListInfo[0].status);
-                    Console.WriteLine("The device state does not support connection." );
-                    return;
-                }
+                Console.WriteLine("[VN_GetDeviceInfoList] success status:(" + status + ").");
                 Device[] cDevice = new Device[deviceCount];
                 Thread[] t = new Thread[deviceCount];
                 for (UInt32 i = 0; i < deviceCount; i++)
@@ -76,15 +78,18 @@ namespace MultiConnectionInMultiThread
             }
 
             status = VNAPI.VN_Shutdown();
-            if (status != ScStatus.SC_OK)
+            if (status == ScStatus.SC_OK)
             {
-                Console.WriteLine("VN_Shutdown failed status:" + status);
-                return;
+                Console.WriteLine("[VN_Shutdown] success status:(" + status + ").");
             }
+            else
+            {
+                Console.WriteLine("[VN_Shutdown] fail status:(" + status + ").");
+                return 1;
+            }
+            Console.WriteLine("---End---");
 
-            Console.WriteLine("--end--");
-
-            return ;
+            return 0;
         }
     }
 
@@ -99,24 +104,30 @@ namespace MultiConnectionInMultiThread
         }
         public void TestDevice()
         {
-            Console.WriteLine("TestDevice");
             lock (this)
             {
-                Console.WriteLine("serialNumber:" + pDeviceListInfo.serialNumber);
-                Console.WriteLine("ip:" + pDeviceListInfo.ip);
-                Console.WriteLine("connectStatus:" + pDeviceListInfo.status);
-
+                Console.WriteLine("The deviceInfo, <serialNumber>:" + pDeviceListInfo.serialNumber + ", <ip>:" + pDeviceListInfo.ip + ", <status>:" + pDeviceListInfo.status);
                 ScStatus status = VNAPI.VN_OpenDeviceBySN(pDeviceListInfo.serialNumber, ref device_);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("OpenDevice " + pDeviceListInfo.serialNumber + " failed status:" + status);
+                    Console.WriteLine("[VN_OpenDeviceBySN] success status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                }
+                else
+                {
+                    Console.WriteLine("[VN_OpenDeviceBySN] fail status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                    return;
                 }
 
                 // Starts capturing the image stream
                 status = VNAPI.VN_StartStream(device_);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("VN_StartStream " + pDeviceListInfo.serialNumber + " failed status:" + status);
+                    Console.WriteLine("[VN_StartStream] success status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                }
+                else
+                {
+                    Console.WriteLine("[VN_StartStream] fail status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                    return;
                 }
 
                 //Wait for the device to upload image data
@@ -130,9 +141,13 @@ namespace MultiConnectionInMultiThread
                     ScFrameReady frameReady = new ScFrameReady();
                     status = VNAPI.VN_GetFrameReady(device_, 1200, ref frameReady);
 
-                    if (status != ScStatus.SC_OK)
+                    if (status == ScStatus.SC_OK)
                     {
-                        Console.WriteLine(pDeviceListInfo.serialNumber + " VN_GetFrameReady failed status:" + status);
+                        Console.WriteLine("[VN_GetFrameReady] success status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                    }
+                    else
+                    {
+                        Console.WriteLine("[VN_GetFrameReady] fail status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
                         continue;
                     }
 
@@ -143,11 +158,11 @@ namespace MultiConnectionInMultiThread
 
                         if (status == ScStatus.SC_OK && depthFrame.pFrameData != IntPtr.Zero)
                         {
-                            Console.WriteLine(pDeviceListInfo.serialNumber + " frameIndex :" + depthFrame.frameIndex);
+                            Console.WriteLine("[VN_GetFrame] success status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber + ", SC_DEPTH_FRAME <frameIndex>: " + depthFrame.frameIndex);
                         }
                         else
                         {
-                            Console.WriteLine(pDeviceListInfo.serialNumber + "VN_GetFrame ScFrameType.SC_DEPTH_FRAME status:" + status);
+                            Console.WriteLine("[VN_GetFrame] fail status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber );
                         }
                     }
                 }
@@ -155,14 +170,22 @@ namespace MultiConnectionInMultiThread
                 // 1.close device
                 // 2.SDK shutdown
                 status = VNAPI.VN_StopStream(device_);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("VN_StopStream failed status:" + status);
+                    Console.WriteLine("[VN_StopStream] success status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                }
+                else
+                {
+                    Console.WriteLine("[VN_StopStream] fail status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
                 }
                 status = VNAPI.VN_CloseDevice(ref device_);
-                if (status != ScStatus.SC_OK)
+                if (status == ScStatus.SC_OK)
                 {
-                    Console.WriteLine("VN_CloseDevice failed status:" + status);
+                    Console.WriteLine("[VN_CloseDevice] success status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
+                }
+                else
+                {
+                    Console.WriteLine("[VN_CloseDevice] fail status:" + status + " The device <serialNumber>: " + pDeviceListInfo.serialNumber);
                 }
                 isTestDone_ = true;
             }

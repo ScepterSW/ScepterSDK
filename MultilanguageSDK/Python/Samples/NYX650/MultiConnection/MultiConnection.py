@@ -7,84 +7,79 @@ sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
-
+print("---MultiConnection---")
 camera = ScepterTofCam()
 
+camera_count = 0
+while camera_count < 2:
+    camera_count = camera.scGetDeviceCount(3000)
+    print("[scGetDeviceCount] success, ScStatus(0), The device count is {}".format(camera_count))
 
-camera_count = camera.scGetDeviceCount(3000)
-print("Get device count:", camera_count)
-retry_count = 100
-while camera_count < 2 and retry_count > 0:
-    retry_count = retry_count-1
-    camera_count = camera.scGetDeviceCount(1000)
-    print("scaning......   ", retry_count)
-
-print("Get device count:", camera_count)
-
-
-if camera_count < 2: 
-    print("there are no camera or only one camera")
-    exit()
-
-print("cam count :",camera_count)
 cameras = []
 
 ret, device_infolist=camera.scGetDeviceInfoList(camera_count)
 if ret==0:
+    print("[scGetDeviceInfoList] success, ScStatus({})".format(ret))
     for i in range(camera_count): 
-        print('cam serialNumber:  ' + str(device_infolist[i].serialNumber))
+        print(" The device index {}, <serialNumber>: {} , <ip>: {} , <status>: {}".format(str(i), str(device_infolist[i].serialNumber.decode()), str(device_infolist[i].ip.decode()), str(device_infolist[i].status)))
         cam = ScepterTofCam()
         ret = cam.scOpenDeviceBySN(device_infolist[i].serialNumber)
         if  ret == 0:
-            print(device_infolist[i].serialNumber,"open successful")
+            print('[scOpenDeviceBySN] success ScStatus({}). The device index {} , <serialNumber>: {}'.format(str(ret), str(i), str(device_infolist[i].serialNumber.decode())))
             cameras.append(cam)
         else:
-            print(device_infolist[i].serialNumber,'scOpenDeviceBySN failed: ' + str(ret))    
+            print('[scOpenDeviceBySN] fail ScStatus({}). The device index {} , <serialNumber>: {}'.format(str(ret), str(i), str(device_infolist[i].serialNumber.decode())))
+            exit(1)
 else:
-    print(' failed:' + ret)  
-    exit()  
+    print("[scGetDeviceInfoList] fail, ScStatus({})".format(ret))
+    exit(1)  
 
 for i in range(camera_count): 
     ret = cameras[i].scStartStream()       
     if  ret == 0:
-        print(device_infolist[i].serialNumber,"scStartStream successful")
+        print('[scStartStream] success ScStatus({}).  The device index {}'.format(str(ret), str(i)))
     else:
-        print(device_infolist[i].serialNumber,'scStartStream failed: ' + str(ret))  
+        print('[scStartStream] fail ScStatus({}).  The device index {}'.format(str(ret), str(i)))
+        exit(1)
+
+#Wait for the device to upload image data.
+time.sleep(1)
 
 # show image 
 
-while 1:
+for ind in range(10):
     for i in range(camera_count): 
         ret, frameready = cameras[i].scGetFrameReady(c_uint16(1200))
-        if  ret !=0:
-            print("scGetFrameReady failed status:",ret)
+        if  ret != 0:
+            print('[scGetFrameReady] fail ScStatus({}).'.format(str(ret)))
             continue
-                        
         if  frameready.depth:      
             ret,depthframe = cameras[i].scGetFrame(ScFrameType.SC_DEPTH_FRAME)
             if  ret == 0:
-                print(device_infolist[i].serialNumber,"  depth frameindex: ",depthframe.frameIndex)
+                print('[scGetFrame] success ScStatus({}). The device index: {}, SC_DEPTH_FRAME <frameIndex>: {}'.format(str(ret), str(i), str(depthframe.frameIndex)))
             else:
-                print("scGetFrame error", ret)
+                print('[scGetFrame] fail ScStatus({}). The device index: {}, SC_DEPTH_FRAME <frameIndex>: {}'.format(str(ret), str(i), str(depthframe.frameIndex)))
         if  frameready.ir:
             ret,irframe = cameras[i].scGetFrame(ScFrameType.SC_IR_FRAME)
             if  ret == 0:
-                print(device_infolist[i].serialNumber,"  ir frameindex: ",irframe.frameIndex)
+                print('[scGetFrame] success ScStatus({}). The device index: {}, SC_IR_FRAME <frameIndex>: {}'.format(str(ret), str(i), str(irframe.frameIndex)))
             else:
-                print("scGetFrame error", ret)
+                print('[scGetFrame] fail ScStatus({}). The device index: {}, SC_IR_FRAME <frameIndex>: {}'.format(str(ret), str(i), str(irframe.frameIndex)))
 
 for i in range(camera_count): 
     
     ret = cameras[i].scStopStream()       
     if  ret == 0:
-        print("stop stream successful")
+        print('[scStopStream] success ScStatus({}). The device index: {}'.format(str(ret), str(i)))
     else:
-        print('scStopStream failed: ' + str(ret))  
+        print('[scStopStream] fail ScStatus({}). The device index: {}'.format(str(ret), str(i)))
+        exit(1)
 
     ret = cameras[i].scCloseDevice()       
     if  ret == 0:
-        print("scCloseDevice successful")
+        print('[scCloseDevice] success ScStatus({}). The device index: {}'.format(str(ret), str(i)))
     else:
-        print('scCloseDevice failed: ' + str(ret))  
-    
-           
+        print('[scCloseDevice] fail ScStatus({}). The device index: {}'.format(str(ret), str(i)))
+        exit(1)
+
+exit(0)

@@ -1,0 +1,12 @@
+{
+    "productName": "DS63",
+    "connectType":"socket",
+    "colorSensor": [
+        {
+            "type": "irscolor"
+        }    ],
+    "toFSensor": [
+        {
+            "type": "irstof"
+        }]
+}

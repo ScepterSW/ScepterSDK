@@ -50,49 +50,71 @@ typedef enum
  */
 typedef enum
 {
-    SC_OK                           = 0,      //!< The function completed successfully.
-    SC_DEVICE_IS_LIMBO              = -1,     //!< The device is limbo
-    SC_INVALID_DEVICE_INDEX         = -2,     //!< The input device index is invalid.
-    SC_DEVICE_POINTER_IS_NULL       = -3,     //!< The device structure pointer is null.
-    SC_INVALID_FRAME_TYPE           = -4,     //!< The input frame type is invalid.
-    SC_FRAME_POINTER_IS_NULL        = -5,     //!< The output frame buffer is null.
-    SC_NO_PROPERTY_VALUE_GET        = -6,     //!< Cannot get the value for the specified property.
-    SC_NO_PROPERTY_VALUE_SET        = -7,     //!< Cannot set the value for the specified property.
-    SC_PROPERTY_POINTER_IS_NULL     = -8,     //!< The input property value buffer pointer is null.
-    SC_PROPERTY_SIZE_NOT_ENOUGH     = -9,     //!< The input property value buffer size is too small to store the specified property value.
-    SC_INVALID_DEPTH_RANGE          = -10,    //!< The input depth range mode is invalid.
-    SC_GET_FRAME_READY_TIME_OUT     = -11,    //!< Capture the next image frame time out.
-    SC_INPUT_POINTER_IS_NULL        = -12,    //!< An input pointer parameter is null.
-    SC_CAMERA_NOT_OPENED            = -13,    //!< The camera has not been opened.
-    SC_INVALID_CAMERA_TYPE          = -14,    //!< The specified type of camera is invalid.
-    SC_INVALID_PARAMS               = -15,    //!< One or more of the parameter values provided are invalid.
-    SC_CURRENT_VERSION_NOT_SUPPORT  = -16,    //!< This feature is not supported in the current version.
-    SC_UPGRADE_IMG_ERROR            = -17,    //!< There is an error in the upgrade file.
-    SC_UPGRADE_IMG_PATH_TOO_LONG    = -18,    //!< Upgrade file path length greater than 260.
-    SC_UPGRADE_CALLBACK_NOT_SET     = -19,    //!< scSetUpgradeStatusCallback is not called.
-    SC_PRODUCT_NOT_SUPPORT          = -20,    //!< The current product does not support this operation.
-    SC_NO_CONFIG_FOLDER             = -21,    //!< No product profile found.
-    SC_WEB_SERVER_START_ERROR       = -22,    //!< WebServer Start/Restart error(IP or PORT 8080).
-    SC_GET_OVER_STAY_FRAME          = -23,    //!< The time from frame ready to get frame is out of 1s.
-    SC_CREATE_LOG_DIR_ERROR         = -24,    //!< Create log directory error.
-    SC_CREATE_LOG_FILE_ERROR        = -25,    //!< Create log file error.
-    SC_NO_ADAPTER_CONNECTED         = -100,   //!< There is no adapter connected.
-    SC_REINITIALIZED                = -101,   //!< The SDK has been Initialized.
-    SC_NO_INITIALIZED               = -102,   //!< The SDK has not been Initialized.
-    SC_CAMERA_OPENED                = -103,   //!< The camera has been opened.
-    SC_CMD_ERROR                    = -104,   //!< Set/Get cmd control error.
-    SC_CMD_SYNC_TIME_OUT            = -105,   //!< Set cmd ok.but time out for the sync return.
-    SC_IP_NOT_MATCH                 = -106,   //!< IP is not in the same network segment.
-    SC_NOT_STOP_STREAM              = -107,   //!< Please invoke scStopStream first to close the data stream.
-    SC_NOT_START_STREAM             = -108,   //!< Please invoke scStartStream first to get the data stream.
-    SC_NOT_FIND_DRIVERS_FOLDER      = -109,   //!< Please check whether the Drivers directory exists.
-    SC_CAMERA_OPENING               = -110,   //!< The camera is openin,by another Sc_OpenDeviceByXXX API.
-    SC_CAMERA_OPENED_BY_ANOTHER_APP = -111,   //!< The camera has been opened by another APP.
-    SC_GET_AI_RESULT_TIME_OUT       = -112,   //!< Capture the next AI result time out.
-    SC_MORPH_AI_LIB_ERROR           = -113,   //!< The morph Al library is not exist or initialized failed.
-    SC_CPU_AFFINITY_CHECK_FAILED    = -114,   //!< The cpu affinity config file check failed
+    SC_OK                                   = 0,      //!< The function completed successfully.
+    SC_DEVICE_IS_LIMBO                      = -1,     //!< The device is limbo
+    SC_INVALID_DEVICE_INDEX                 = -2,     //!< The input device index is invalid.
+    SC_DEVICE_POINTER_IS_NULL               = -3,     //!< The device structure pointer is null.
+    SC_INVALID_FRAME_TYPE                   = -4,     //!< The input frame type is invalid.
+    SC_FRAME_POINTER_IS_NULL                = -5,     //!< The output frame buffer is null.
+    SC_NO_PROPERTY_VALUE_GET                = -6,     //!< Cannot get the value for the specified property.
+    SC_NO_PROPERTY_VALUE_SET                = -7,     //!< Cannot set the value for the specified property.
+    SC_PROPERTY_POINTER_IS_NULL             = -8,     //!< The input property value buffer pointer is null.
+    SC_PROPERTY_SIZE_NOT_ENOUGH             = -9,     //!< The input property value buffer size is too small to store the specified property value.
+    SC_INVALID_DEPTH_RANGE                  = -10,    //!< The input depth range mode is invalid.
+    SC_GET_FRAME_READY_TIME_OUT             = -11,    //!< Capture the next image frame time out.
+    SC_INPUT_POINTER_IS_NULL                = -12,    //!< An input pointer parameter is null.
+    SC_CAMERA_NOT_OPENED                    = -13,    //!< The camera has not been opened.
+    SC_INVALID_CAMERA_TYPE                  = -14,    //!< The specified type of camera is invalid.
+    SC_INVALID_PARAMS                       = -15,    //!< One or more of the parameter values provided are invalid.
+    SC_CURRENT_VERSION_NOT_SUPPORT          = -16,    //!< This feature is not supported in the current version.
+    SC_UPGRADE_IMG_ERROR                    = -17,    //!< There is an error in the upgrade file.
+    SC_UPGRADE_IMG_PATH_TOO_LONG            = -18,    //!< Upgrade file path length greater than 260.
+    SC_UPGRADE_CALLBACK_NOT_SET             = -19,    //!< scSetUpgradeStatusCallback is not called.
+    SC_PRODUCT_NOT_SUPPORT                  = -20,    //!< The current product does not support this operation.
+    SC_NO_CONFIG_FOLDER                     = -21,    //!< No product profile found.
+    SC_WEB_SERVER_START_ERROR               = -22,    //!< WebServer Start/Restart error(IP or PORT 8080).
+    SC_GET_OVER_STAY_FRAME                  = -23,    //!< The time from frame ready to get frame is out of 1s.
+    SC_CREATE_LOG_DIR_ERROR                 = -24,    //!< Create log directory error.
+    SC_CREATE_LOG_FILE_ERROR                = -25,    //!< Create log file error.
+    SC_NO_ADAPTER_CONNECTED                 = -100,   //!< There is no adapter connected.
+    SC_REINITIALIZED                        = -101,   //!< The SDK has been Initialized.
+    SC_NO_INITIALIZED                       = -102,   //!< The SDK has not been Initialized.
+    SC_CAMERA_OPENED                        = -103,   //!< The camera has been opened.
+    SC_CMD_ERROR                            = -104,   //!< Set/Get cmd control error.
+    SC_CMD_SYNC_TIME_OUT                    = -105,   //!< Set cmd ok.but time out for the sync return.
+    SC_IP_NOT_MATCH                         = -106,   //!< IP is not in the same network segment.
+    SC_NOT_STOP_STREAM                      = -107,   //!< Please invoke scStopStream first to close the data stream.
+    SC_NOT_START_STREAM                     = -108,   //!< Please invoke scStartStream first to get the data stream.
+    SC_NOT_FIND_DRIVERS_FOLDER              = -109,   //!< Please check whether the Drivers directory exists.
+    SC_CAMERA_OPENING                       = -110,   //!< The camera is openin,by another Sc_OpenDeviceByXXX API.
+    SC_CAMERA_OPENED_BY_ANOTHER_APP         = -111,   //!< The camera has been opened by another APP.
+    SC_GET_AI_RESULT_TIME_OUT               = -112,   //!< Capture the next AI result time out.
+    SC_MORPH_AI_LIB_ERROR                   = -113,   //!< The morph AI library is not exist or initialized failed.
+    SC_CPU_AFFINITY_CHECK_FAILED            = -114,   //!< The cpu affinity config file check failed
+    SC_ALG_TRANSFER_FAILED                  = -115,   //!< The morph AI package transfer failed.
+    SC_ALG_TRANSFER_CHECKSUM_FAILED         = -116,   //!< The morph AI package checksum check failed.
+    SC_ALG_TRANSFER_PACKAGE_VERSION_FAILED  = -117,   //!< The morph AI package version check failed.
+    SC_SN_NOT_MATCHED                       = -118,   //!< The sn number of opended device is not matched with input sn number.
+    SC_ALG_TRANSFER_FILE_NOT_EXIST          = -119,   //!< The morph AI package not exits.
+    SC_DEVICE_OVERHEATED                    = 1,      //!< The device is overheated
 
-    SC_OTHERS                       = -255,   //!< An unknown error occurred.
+    SC_MORPH_COMMAND_FAILED                 = -201,   //!< The command is executed failed.
+    SC_CONFIGURATION_FILE_NOT_FOUND         = -202,   //!< The configuration file were not found.
+    SC_CONFIGURATION_FILE_CORRUPTED         = -203,   //!< The configuration file is corrupted.
+    SC_DETECTION_AREA_PARAMS_ERROR          = -204,   //!< The detection area parameters were not valid.
+    SC_BG_CALIBRATION_PARAMS_NOT_FOUND      = -205,   //!< The background calibration parameters file was not found.
+    SC_BG_CALIBRATION_PARAMS_FILE_CORRUPTED = -206,   //!< The background calibration parameters file is corrupted.
+    SC_IMAGE_DIFFREENCE_OVER                = -207,   //!< Too much difference between images.
+    SC_OBTAIN_IMAGE_TIME_OUT                = -208,   //!< The algorithm timed out to obtain the image.
+    SC_INPUT_PARAMS_ERROR                   = -213,   //!< The input parameter is invalid.
+    SC_ALG_NOT_INIT                         = -214,   //! The algorithm has not been initialized.
+    SC_COMMOND_TYPE_NOT_SUPPORT             = -215,   //!< The command type is not supported.d.
+    SC_ALG_PROCESS_NOT_STARTED              = -216,   //!< The algorithm process was not started.
+    SC_WRITE_PARAMS_FAILED                  = -217,   //!< Failed to write parameters to file.
+    SC_CHECK_PARAMES_FAILED                 = -218,   //!< Check that the parameters are invalid, please get the error message of the camera.
+    SC_PARAMS_LEN_INVAILD                   = -219,   //!< The length of the input parameter is invalid.
+
+    SC_OTHERS                               = -255,   //!< An unknown error occurred.
 } ScStatus;
 
 typedef enum
@@ -105,9 +127,9 @@ typedef enum
 typedef enum
 {
     SC_ACTIVE_MODE           = 0x00,   //!< Enter the active mode.
-    SC_HARDWARE_TRIGGER_MODE = 0x01,   //!< Enter the hardware salve mode, at this time need to connect
+    SC_HARDWARE_TRIGGER_MODE = 0x01,   //!< Enter the hardware slave mode, at this time need to connect
                                        //!< the hardware trigger wire, provide hardware signal, to trigger the image.
-    SC_SOFTWARE_TRIGGER_MODE = 0x02,   //!< Enter the software salve mode, at this time need to invoke scSoftwareTriggerOnce, to trigger the image.
+    SC_SOFTWARE_TRIGGER_MODE = 0x02,   //!< Enter the software slave mode, at this time need to invoke scSoftwareTriggerOnce, to trigger the image.
 } ScWorkMode;
 
 typedef enum

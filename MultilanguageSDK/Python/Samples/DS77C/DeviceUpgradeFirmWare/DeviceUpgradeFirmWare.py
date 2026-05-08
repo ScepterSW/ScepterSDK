@@ -8,72 +8,77 @@ sys.path.append(libpath)  # absolutely path
 
 from API.ScepterDS_api import *
 import time
-
+print("---DeviceUpgradeFirmWare---")
 camera = ScepterTofCam()
 
 camera_count = camera.scGetDeviceCount(3000)
-print("Get device count:", camera_count)
+print("[scGetDeviceCount] success, ScStatus(0), The device count is {}".format(camera_count))
 if camera_count <= 0:
     print(
         "scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.")
-    exit()
+    exit(1)
 
 device_info = ScDeviceInfo()
 
 if camera_count > 0:
-    ret, device_infolist = camera.scGetDeviceInfoList(camera_count)
-    if ret == 0:
+    ret,device_infolist=camera.scGetDeviceInfoList(camera_count)
+    if ret==0:
         device_info = device_infolist[0]
+        print("[scGetDeviceInfoList] success, ScStatus({}). The first deviceInfo, <serialNumber>: {} , <ip>: {} , <status>: {}".format(ret, str(device_info.serialNumber.decode()), str(device_info.ip.decode()), str(device_info.status)))
+        if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
+            print(" The first device [status]: {} does not support connection.".format(str(device_info.status)))
+            exit(1)
     else:
-        print(' failed:' + ret)
-        exit()
-else:
+        print("[scGetDeviceInfoList] fail, ScStatus({})".format(ret))
+        exit(1) 
+else: 
     print("there are no camera found")
-    exit()
-
-if ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-    print("connect status:", device_info.status)
-    print("Call scOpenDeviceBySN with connect status :", ScConnectStatus.SC_CONNECTABLE.value)
-    exit()
-else:
-    print("serialNumber: " + str(device_info.serialNumber))
-    print("ip: " + str(device_info.ip))
-    print("connectStatus: " + str(device_info.status))
+    exit(1)
 
 ret = camera.scOpenDeviceBySN(device_info.serialNumber)
-if ret == 0:
-    print("scOpenDeviceBySN")
+if  ret == 0:
+    print('[scOpenDeviceBySN] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scOpenDeviceBySN failed: ' + str(ret))
+    print('[scOpenDeviceBySN] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
-imgpath = input('Please input firmware file path:')
+imgpath ="./fw.img"
+if not os.path.exists(imgpath):
+    imgpath = input('Please input image file path:')
 ret = camera.scStartUpgradeFirmWare(imgpath)
 if ret == 0:
-    print("scStartUpgradeFirmWare successful")
+    print('[scStartUpgradeFirmWare] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scStartUpgradeFirmWare failed: ' + str(ret))
+    print('[scStartUpgradeFirmWare] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 while True:
     ret, status, process = camera.scGetUpgradeStatus()
     if ret == 0:
-        print("Upgrade firmWare status:" + str(status) + ", process:" + str(process))
+        print('[scGetUpgradeStatus] success ScStatus({}). Upgrade firmWare status: {}, process: {}'.format(str(ret), str(status), str(process)))
         if status == 0:
             '''Upgrade progress is 100, upgrade successful. After the upgrade is successful,'''
             '''the SDK will automatically reboot the device internally to make the upgrade file effective.'''
             if process == 100:
-                print('Upgrade OK.')
+                print('Upgrade done.')
+                print("Waiting for reboot.")
+                time.sleep(10)
+                print("Rebort done.")
                 break
         else:
-            print('scGetUpgradeStatus failed: ' + str(status))
+            print('[scGetUpgradeStatus] fail ScStatus({}).'.format(str(ret)))
             break
 
     else:
-        print('scGetUpgradeStatus failed: ' + str(ret))
+        print('[scGetUpgradeStatus] fail ScStatus({}).'.format(str(ret)))
         break
     time.sleep(1)
 
 ret = camera.scCloseDevice()
-if ret == 0:
-    print("scCloseDevice successful")
+if  ret == 0:
+    print('[scCloseDevice] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scCloseDevice failed: ' + str(ret))
+    print('[scCloseDevice] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
+
+exit(0)

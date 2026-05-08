@@ -24,7 +24,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	do
@@ -37,7 +37,7 @@ int main()
 		else
 		{
 			cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 	} while (deviceCount < 2);
 
@@ -52,18 +52,18 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	cout << endl;
-	for (int i = 0; i < deviceCount; i++)
+	for (uint32_t i = 0; i < deviceCount; i++)
 	{
 		cout << " The device index: " << i << ", <serialNumber>: " << pDeviceListInfo[i].serialNumber
 			<< ", <ip>: " << pDeviceListInfo[i].ip << ", <status>: " << pDeviceListInfo[i].status << endl;
 	}
 
 	deviceHandle = new ScDeviceHandle[deviceCount];
-	for (int i = 0; i < deviceCount; i++)
+	for (uint32_t i = 0; i < deviceCount; i++)
 	{
 		status = scOpenDeviceBySN(pDeviceListInfo[i].serialNumber, &deviceHandle[i]);
 		if (status == ScStatus::SC_OK)
@@ -77,13 +77,13 @@ int main()
 			pDeviceListInfo = NULL;
 			delete[] deviceHandle;
 			deviceHandle = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	delete[] pDeviceListInfo;
 	pDeviceListInfo = NULL;
 
-	for (int i = 0; i < deviceCount; i++)
+	for (uint32_t i = 0; i < deviceCount; i++)
 	{
 		status = scStartStream(deviceHandle[i]);
 		if (status == ScStatus::SC_OK)
@@ -95,7 +95,7 @@ int main()
 			cout << "[scStartStream] fail, ScStatus(" << status << "). The device index: " << i << endl;
 			delete[] deviceHandle;
 			deviceHandle = NULL;
-			return -1;
+			return 1;
 		}
 	}
 
@@ -104,7 +104,7 @@ int main()
 
 	for (int j = 0; j < frameSpace; j++)
 	{
-		for (int i = 0; i < deviceCount; i++)
+		for (uint32_t i = 0; i < deviceCount; i++)
 		{
 			if (deviceHandle[i])
 			{
@@ -134,7 +134,7 @@ int main()
 		}
 	}
 
-	for (int i = 0; i < deviceCount; i++)
+	for (uint32_t i = 0; i < deviceCount; i++)
 	{
 		status = scStopStream(deviceHandle[i]);
 		if (status == ScStatus::SC_OK)
@@ -146,7 +146,7 @@ int main()
 			cout << "[scStopStream] fail, ScStatus(" << status << "). The device index: " << i << endl;
 			delete[] deviceHandle;
 			deviceHandle = NULL;
-			return -1;
+			return 1;
 		}
 
 		status = scCloseDevice(&deviceHandle[i]);
@@ -159,7 +159,7 @@ int main()
 			cout << "[scCloseDevice] fail, ScStatus(" << status << "). The device index: " << i << endl;
 			delete[] deviceHandle;
 			deviceHandle = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	delete[] deviceHandle;
@@ -173,7 +173,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

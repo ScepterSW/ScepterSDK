@@ -7,15 +7,14 @@ sys.path.append(libpath) #absolutely path
 
 from API.ScepterDS_api import *
 import time
-
+print("---ToFExposureTimeSetGet---")
 camera = ScepterTofCam()
 
-
 camera_count = camera.scGetDeviceCount(3000)
-print("Get device count:", camera_count)
+print("[scGetDeviceCount] success, ScStatus(0), The device count is {}".format(camera_count))
 if camera_count <= 0:
-    print("scGetDeviceCount scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.")
-    exit()
+    print("[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples.")
+    exit(1)
 
 device_info=ScDeviceInfo()
 
@@ -23,87 +22,96 @@ if camera_count > 0:
     ret,device_infolist=camera.scGetDeviceInfoList(camera_count)
     if ret==0:
         device_info = device_infolist[0]
+        print("[scGetDeviceInfoList] success, ScStatus({}). The first deviceInfo, <serialNumber>: {} , <ip>: {} , <status>: {}".format(ret, str(device_info.serialNumber.decode()), str(device_info.ip.decode()), str(device_info.status)))
+        if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
+            print(" The first device [status]: {} does not support connection.".format(str(device_info.status)))
+            exit(1)
     else:
-        print(' failed:' + ret)  
-        exit()  
+        print("[scGetDeviceInfoList] fail, ScStatus({})".format(ret))
+        exit(1) 
 else: 
     print("there are no camera found")
-    exit()
-
-if  ScConnectStatus.SC_CONNECTABLE.value != device_info.status:
-	print("connect status:",device_info.status)  
-	print("Call scOpenDeviceBySN with connect status :",ScConnectStatus.SC_CONNECTABLE.value)
-	exit()
-else:
-    print("serialNumber: "+str(device_info.serialNumber))
-    print("ip: "+str(device_info.ip))
-    print("connectStatus: "+str(device_info.status))
+    exit(1)
 
 ret = camera.scOpenDeviceBySN(device_info.serialNumber)
 if  ret == 0:
-    print("scOpenDeviceBySN")
+    print('[scOpenDeviceBySN] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scOpenDeviceBySN failed: ' + str(ret))   
+    print('[scOpenDeviceBySN] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret = camera.scStartStream()
 if  ret == 0:
-    print("scStartStream successful")
+    print('[scStartStream] success ScStatus({}).'.format(str(ret)))
 else:
-    print("scStartStream failed:"+ str(ret))   
+    print('[scStartStream] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
+print("\n---1. Default frame rate---")
 '''Testing TOF exposure time requires turning off HDR in advance.'''
 ret = camera.scSetExposureControlMode()
 if  ret == 0:
-    print("set tofsensor to manual mode successful")
+    print('[scSetExposureControlMode] success ScStatus({}).  Set SC_EXPOSURE_CONTROL_MODE_MANUAL success.'.format(str(ret)))
 else:
-    print("scSetExposureControlMode failed:"+ str(ret))   
+    print('[scSetExposureControlMode] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret,frameRate = camera.scGetFrameRate()
 if  ret == 0:
-    print("Get default frame rate:"+ str(frameRate))   
+    print('[scGetFrameRate] success ScStatus({}). The device frame rate is {}.'.format(str(ret), frameRate))
 else:
-    print("scGetFrameRate failed:"+ str(ret))   
+    print('[scGetFrameRate] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret,MaxExposureTime = camera.scGetMaxExposureTime(ScSensorType.SC_TOF_SENSOR)
 if  ret == 0:
-    print("Recommended scope: 58 - "+ str(MaxExposureTime))   
+    print('[scGetMaxExposureTime] success ScStatus({}). Recommended scope: 58 - {}.'.format(str(ret), str(MaxExposureTime)))
 else:
-    print("scGetMaxExposureTime failed:"+ str(ret))   
+    print('[scGetMaxExposureTime] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret = camera.scSetExposureTime(ScSensorType.SC_TOF_SENSOR,400)
 if  ret == 0:
-    print("Set exposure time 400 is ok")   
+    print('[scSetExposureTime] success ScStatus({}). Set exposure time 400 is OK.'.format(str(ret)))  
 else:
-    print("scSetExposureTime failed:"+ str(ret))   
-
+    print('[scSetExposureTime] fail ScStatus({}).'.format(str(ret)))  
+    exit(1)
+print("\n---2. Set frame rate to 5---")
 ret = camera.scSetFrameRate(5)
 if  ret == 0:
-    print("Set frame rate 5 is ok")   
+    print('[scSetFrameRate] success ScStatus({}). Set frame rate 5 is OK.'.format(str(ret)))
 else:
-    print("scSetFrameRate failed:"+ str(ret))   
+    print('[scSetFrameRate] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret,MaxExposureTime = camera.scGetMaxExposureTime(ScSensorType.SC_TOF_SENSOR)
 if  ret == 0:
-    print("Recommended scope: 58 - "+ str(MaxExposureTime))   
+    print('[scGetMaxExposureTime] success ScStatus({}). Recommended scope: 58 - {}.'.format(str(ret), str(MaxExposureTime)))
 else:
-    print("scGetMaxExposureTime failed:"+ str(ret))   
+    print('[scGetMaxExposureTime] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
 ret = camera.scSetExposureTime(ScSensorType.SC_TOF_SENSOR,500)
 if  ret == 0:
-    print("Set exposure time 500 is ok")   
+    print('[scSetExposureTime] success ScStatus({}). Set exposure time 500 is OK.'.format(str(ret)))  
 else:
-    print("scSetExposureTime failed:"+ str(ret))   
+    print('[scSetExposureTime] fail ScStatus({}).'.format(str(ret)))  
+    exit(1)
 	
 ret = camera.scStopStream()
 if  ret == 0:
-    print("stopstream success")
+    print('[scStopStream] success ScStatus({}).'.format(str(ret)))
 else:
-    print("stopstream failed",ret)
+    print('[scStopStream] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
-ret = camera.scCloseDevice()     
+ret = camera.scCloseDevice()
 if  ret == 0:
-    print("scCloseDevice successful")
+    print('[scCloseDevice] success ScStatus({}).'.format(str(ret)))
 else:
-    print('scCloseDevice failed: ' + str(ret)) 
+    print('[scCloseDevice] fail ScStatus({}).'.format(str(ret)))
+    exit(1)
 
-print('Test end, please reboot camera to restore the default settings')  
+
+
+exit(0)

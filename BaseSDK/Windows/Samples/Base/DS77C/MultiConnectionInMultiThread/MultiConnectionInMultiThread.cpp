@@ -130,7 +130,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	do
@@ -143,7 +143,7 @@ int main()
 		else
 		{
 			cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 	} while (deviceCount < 2);
 
@@ -174,7 +174,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -185,7 +185,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

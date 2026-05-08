@@ -21,7 +21,7 @@ int main()
 	else
 	{
 		cout << "[scInitialize] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scGetDeviceCount(&deviceCount, 3000);
@@ -32,12 +32,12 @@ int main()
 	else
 	{
 		cout << "[scGetDeviceCount] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	if (0 == deviceCount)
 	{
 		cout << "[scGetDeviceCount] scans for 3000ms and then returns the device count is 0. Make sure the device is on the network before running the samples." << endl;
-		return -1;
+		return 1;
 	}
 
 	pDeviceListInfo = new ScDeviceInfo[deviceCount];
@@ -50,7 +50,7 @@ int main()
 			cout << " The first device [status]: " << pDeviceListInfo[0].status << " does not support connection." << endl;
 			delete[] pDeviceListInfo;
 			pDeviceListInfo = NULL;
-			return -1;
+			return 1;
 		}
 	}
 	else
@@ -58,7 +58,7 @@ int main()
 		cout << "[scGetDeviceInfoList] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 	cout << " The first deviceInfo, <serialNumber>: " << pDeviceListInfo[0].serialNumber
 		<< ", <ip>: " << pDeviceListInfo[0].ip << ", <status>: " << pDeviceListInfo[0].status << endl;
@@ -75,7 +75,7 @@ int main()
 		cout << "[scOpenDeviceBySN] fail, ScStatus(" << status << ")." << endl;
 		delete[] pDeviceListInfo;
 		pDeviceListInfo = NULL;
-		return -1;
+		return 1;
 	}
 
 	status = scStartStream(deviceHandle);
@@ -86,7 +86,7 @@ int main()
 	else
 	{
 		cout << "[scStartStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	int32_t frameRate = 5;
@@ -98,7 +98,7 @@ int main()
 	else
 	{
 		cout << "[scSetFrameRate] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	bool enabled = false;
@@ -110,7 +110,7 @@ int main()
 	else
 	{
 		cout << "[scGetWDRModeEnabled] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	//If WDR is disabled, enable it.
@@ -126,7 +126,7 @@ int main()
 		else
 		{
 			cout << "[scGetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 
 		if (SC_EXPOSURE_CONTROL_MODE_AUTO == eControlMode)
@@ -139,7 +139,7 @@ int main()
 			else
 			{
 				cout << "[scSetExposureControlMode] fail, ScStatus(" << status << ")." << endl;
-				return -1;
+				return 1;
 			}
 		}
 
@@ -152,7 +152,7 @@ int main()
 		else
 		{
 			cout << "[scSetWDRModeEnabled] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 	}
 
@@ -165,45 +165,45 @@ int main()
 	else
 	{
 		cout << "[scGetFrameCountOfWDRMode] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
-	for (int i = 0; i < nCount; i++)
+	for (uint8_t i = 0; i < nCount; i++)
 	{
 		int32_t maxExposureTime = 0;
 		status = scGetMaxExposureTimeOfWDR(deviceHandle, i, &maxExposureTime);
 		if (status == ScStatus::SC_OK)
 		{
-			cout << "[scGetMaxExposureTimeOfWDR] success, ScStatus(" << status << "). Get frame count: " << i << " max WDR exposure time: " << maxExposureTime << endl;
+			cout << "[scGetMaxExposureTimeOfWDR] success, ScStatus(" << status << "). Get frame count: " << (int16_t)i << " max WDR exposure time: " << maxExposureTime << endl;
 		}
 		else
 		{
 			cout << "[scGetMaxExposureTimeOfWDR] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 
 		int32_t curExposureTime = 0;
 		status = scGetExposureTimeOfWDR(deviceHandle, i, &curExposureTime);
 		if (status == ScStatus::SC_OK)
 		{
-			cout << "[scGetExposureTimeOfWDR] success, ScStatus(" << status << "). Get frame count: " << i << " current WDR exposure time: " << curExposureTime << endl;
+			cout << "[scGetExposureTimeOfWDR] success, ScStatus(" << status << "). Get frame count: " << (int16_t)i << " current WDR exposure time: " << curExposureTime << endl;
 		}
 		else
 		{
 			cout << "[scGetExposureTimeOfWDR] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 
 		int32_t exposureTime = maxExposureTime / 2;
 		status = scSetExposureTimeOfWDR(deviceHandle, i, exposureTime);
 		if (status == ScStatus::SC_OK)
 		{
-			cout << "[scSetExposureTimeOfWDR] success, ScStatus(" << status << "). Set frame count: " << i << " WDR exposure time: " << exposureTime << endl;
+			cout << "[scSetExposureTimeOfWDR] success, ScStatus(" << status << "). Set frame count: " << (int16_t)i << " WDR exposure time: " << exposureTime << endl;
 		}
 		else
 		{
 			cout << "[scSetExposureTimeOfWDR] fail, ScStatus(" << status << ")." << endl;
-			return -1;
+			return 1;
 		}
 	}
 
@@ -215,7 +215,7 @@ int main()
 	else
 	{
 		cout << "[scStopStream] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scCloseDevice(&deviceHandle);
@@ -226,7 +226,7 @@ int main()
 	else
 	{
 		cout << "[scCloseDevice] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 
 	status = scShutdown();
@@ -237,7 +237,7 @@ int main()
 	else
 	{
 		cout << "[scShutdown] fail, ScStatus(" << status << ")." << endl;
-		return -1;
+		return 1;
 	}
 	cout << "---End---" << endl;
 

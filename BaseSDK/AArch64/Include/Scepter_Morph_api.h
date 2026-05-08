@@ -20,8 +20,15 @@
 typedef enum
 {
     AI_CONTINUOUS_RUN_MODE = 0x00,   //!< Enter the continuous mode.
-    AI_SINGLE_RUN_MODE     = 0x01,   //!< Enter the single run mode, at this time need to invoke scAIModuleTriggerOnce, to trigger the algo result.
+    AI_SINGLE_RUN_MODE     = 0x01,   //!< Enter the single run mode, at this time need to invoke scAIModuleTriggerOnce, to trigger frame once and get the algo result of this frame.
+    AI_SINGLE_REPORT_MODE  = 0x02    //!< Enter the single report mode. at this time need to invoke scAIModuleTriggerOnce, to trigger an algo result.
 } ScAIModuleMode;
+
+typedef enum
+{
+    AI_MODULE_TRANSFER_DOWNLOAD = 0x01,   //!< Download AI module to device.
+    AI_MODULE_TRANSFER_UPLOAD   = 0x02    //!< Upload AI module from device.
+} ScAIModuleTransferType;
 
 #pragma pack(push, 1)
 
@@ -138,4 +145,28 @@ SCEPTER_C_API_EXPORT ScStatus scAIModuleGetPreviewFrameTypeEnabled(ScDeviceHandl
  * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
  */
 SCEPTER_C_API_EXPORT ScStatus scAIModuleGetResult(ScDeviceHandle device, uint16_t waitTime, ScAIResult* pAIResult);
+
+/**
+ * @brief        Upgrade AI mode file
+ * @param[in]    device       The handle of the device.
+ * @param[in]    pfilekPath   Pointer to a buffer containing the AI mode file path.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scAIModuleTransfer(ScDeviceHandle device, ScAIModuleTransferType transferType, const char* pfilekPath, const char* parentDic);
+
+/**
+ * @brief        Get the status of upgrade
+ * @param[in]    device       The handle of the device.
+ * @param[out]   pState		  Pointer to a buffer containing the status of upgrade.
+ * @param[out]   pProcess     Pointer to a buffer containing the process of upgrade. The value of process is in the range [1,100].
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scAIModuleTransferStates(ScDeviceHandle device, uint8_t* pState, uint8_t* pProcess);
+
+/**
+ * @brief        Delete AI mode
+ * @param[in]    device       The handle of the device.
+ * @return       ::SC_OK      If the function succeeded, or one of the error values defined by ::ScStatus.
+ */
+SCEPTER_C_API_EXPORT ScStatus scAIModuleDelete(ScDeviceHandle device);
 #endif /* SCEPTER_MORPH_API_H */

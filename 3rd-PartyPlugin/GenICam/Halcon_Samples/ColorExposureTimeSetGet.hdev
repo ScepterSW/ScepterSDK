@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="20.11.1.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* </c>
+<c>* Example for the usage of a Vzense 3D camera in HALCON.</c>
+<c>* </c>
+<c>* This sample shows how to set the camera color exposure time.</c>
+<c></c>
+<c>* Please note that you first need to install the matching Vzense</c>
+<c>* GenTL Producer. After this, you can access the camera with the</c>
+<c>* HALCON GenICamTL interface.</c>
+<c>*</c>
+<l>dev_close_window()</l>
+<l>dev_update_off()</l>
+<c>*</c>
+<l>info_framegrabber ('GenICamTL', 'info_boards', Information, DeviceList)</l>
+<l>tuple_regexp_select (DeviceList, 'sceptergentl.cti', Device)</l>
+<l>if (Device == [])</l>
+<c>     * No Vzense camera found</c>
+<l>    stop ()</l>
+<l>endif</l>
+<l>try</l>
+<l>    open_file('ColorExposureTimeSetGet.txt', 'output', FileHandle)</l>
+<l>    fwrite_string(FileHandle, '---ColorExposureTimeSetGet---\n')</l>
+<l>    tuple_regexp_match(Device[0], 'user_name:([^|]+)', user_name)</l>
+<l>    fwrite_string(FileHandle, 'The first deviceInfo, &lt;serialNumber&gt;: '+ user_name +'\n')</l>
+<c>    * open first device</c>
+<l>    open_framegrabber('GenICamTL', 1, 1, 0, 0, 0, 0, 'default', -1, 'default', -1, 'false', 'default', Device[0], -1, -1, AcqHandle)</l>
+<l>    fwrite_string(FileHandle, 'Open framegrabber success.\n')</l>
+<c></c>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureMode', 'Timed')</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTimeMode', 'Individual')</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTimeSelector', ExposureTimeSelector)</l>
+<l>    if(ExposureTimeSelector == 'HDR' or ExposureTimeSelector == 'WDR')</l>
+<c>        * disable hdr or wdr</c>
+<l>        set_framegrabber_param(AcqHandle, 'MultiSlopeMode', 'Off')</l>
+<l>        fwrite_string(FileHandle, 'Disable ' + ExposureTimeSelector +' success.\n')</l>
+<l>    endif</l>
+<c>    * get framerate</c>
+<l>    set_framegrabber_param(AcqHandle, 'AcquisitionFrameRateEnable', true)</l>
+<l>    get_framegrabber_param(AcqHandle, 'AcquisitionFrameRate', framerate)</l>
+<l>    fwrite_string(FileHandle, 'Get frame rate success. The device frame rate is ' + framerate  +'\n')</l>
+<l>    fwrite_string(FileHandle, '---To SC_EXPOSURE_CONTROL_MODE_MANUAL--- \n')</l>
+<c></c>
+<c>    * set color manual exposure time</c>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTimeSelector', 'Color')</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureAuto', 'Off')</l>
+<l>    fwrite_string(FileHandle, 'Set SC_EXPOSURE_CONTROL_MODE_MANUAL success.\n')</l>
+<c>    </c>
+<l>    fwrite_string(FileHandle, '---1. Get color sensor exposure time range with frame rate ' + framerate  +'\n')</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTime_range', ExposureTimeRange)</l>
+<l>    fwrite_string(FileHandle, 'Get max exposure time success. Recommand scope: 100 - ' + ExposureTimeRange[1]  +'\n')</l>
+<l>    fwrite_string(FileHandle, '---2. Set and get color sensor new exposure time---\n')</l>
+<l>    colorExposureTime:=3000</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTime', colorExposureTime)</l>
+<l>    fwrite_string(FileHandle, 'Set the device exposure time to ' + colorExposureTime  +'\n')</l>
+<l>    colorExposureTime:=0</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTime', colorExposureTime)</l>
+<l>    fwrite_string(FileHandle, 'The device exposure time is ' + colorExposureTime  +'\n')</l>
+<c></c>
+<c>    *set color gain</c>
+<l>    set_framegrabber_param(AcqHandle, 'GainSelector', 'COLOR')</l>
+<l>    get_framegrabber_param(AcqHandle, 'GainAuto', GainAuto)</l>
+<l>    if(GainAuto == 'Continuous')</l>
+<l>        set_framegrabber_param(AcqHandle, 'GainAuto', 'Off')</l>
+<l>    endif</l>
+<l>    Gain:=35</l>
+<l>    set_framegrabber_param(AcqHandle, 'Gain', Gain)</l>
+<l>    fwrite_string(FileHandle, 'Set the device color gain to ' + Gain  +'\n')</l>
+<l>    get_framegrabber_param(AcqHandle, 'Gain', Gain)</l>
+<l>    fwrite_string(FileHandle, 'The device color gain is ' + Gain  +'\n')</l>
+<c></c>
+<l>    fwrite_string(FileHandle, '---To SC_EXPOSURE_CONTROL_MODE_AUTO--- \n')</l>
+<c>    * set color auto AEC exposure time</c>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureMode', 'Timed')</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTimeMode', 'Individual')</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTimeSelector', 'Color')</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureAuto', 'Continuous')</l>
+<l>    fwrite_string(FileHandle, 'Set SC_EXPOSURE_CONTROL_MODE_AUTO success.\n')</l>
+<c>    </c>
+<l>    fwrite_string(FileHandle, '---1. Get color exposure time range---\n')</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTime_range', ExposureTimeRange)</l>
+<l>    fwrite_string(FileHandle, 'Get max exposure time success. Recommand scope: 100 - ' + ExposureTimeRange[1]  +'\n')</l>
+<c>    </c>
+<l>    fwrite_string(FileHandle, '---2. Set and get color sensor new max exposure time range in auto mode---\n')</l>
+<l>    colorAECExposureTime:=3000</l>
+<l>    set_framegrabber_param(AcqHandle, 'ExposureTime', colorAECExposureTime)</l>
+<l>    fwrite_string(FileHandle, 'Set color AEC max exposure time to ' + colorAECExposureTime  +'\n')</l>
+<l>    colorAECExposureTime:=0</l>
+<l>    get_framegrabber_param(AcqHandle, 'ExposureTime', colorAECExposureTime)</l>
+<l>    fwrite_string(FileHandle, 'Get color AEC max exposure time is ' + colorAECExposureTime  +'\n')</l>
+<l>    close_framegrabber (AcqHandle)</l>
+<l>    fwrite_string(FileHandle, 'Close framegrabber success.\n')</l>
+<l>    fwrite_string(FileHandle, '---End---\n')</l>
+<l>    close_file(FileHandle)</l>
+<l>catch(Exception)</l>
+<l>     dev_get_exception_data (Exception, 'error_code', error_code)</l>
+<l>     dev_get_exception_data (Exception, 'error_msg', errorMsg)</l>
+<l>     dev_get_exception_data (Exception, 'add_error_message', add_error_message)</l>
+<l>     dev_get_exception_data (Exception, 'program_line', program_line)</l>
+<l>     dev_get_exception_data (Exception, 'operator', operator)</l>
+<l>     outPutMsg:= add_error_message + ' Operator: ' + operator + ' ErrorMsg: ' + errorMsg + ' ErrorCode: ' + error_code + ' Line: ' + program_line</l>
+<l>     fwrite_string(FileHandle, outPutMsg + '\n')</l>
+<l>     close_framegrabber (AcqHandle)</l>
+<l>     close_file(FileHandle)</l>
+<l>     stop()</l>
+<l>endtry</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="disp_current_image">
+<interface>
+<io>
+<par name="Images" base_type="iconic" dimension="0"/>
+</io>
+<ic>
+<par name="Index" base_type="ctrl" dimension="0"/>
+<par name="WindowHandle" base_type="ctrl" dimension="0"/>
+<par name="Title" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>select_obj (Images, Image, Index)</l>
+<l>dev_set_window (WindowHandle)</l>
+<l>if (strstr(Title, 'IR') == 0)</l>
+<l>   dev_set_lut('inv_sqrt')</l>
+<l>endif</l>
+<l>dev_display (Image)</l>
+<l>dev_disp_text (Title, 'window', 12, 12, 'black', [], [])</l>
+<l>return ()</l>
+</body>
+<docu id="disp_current_image">
+<parameters>
+<parameter id="Images"/>
+<parameter id="Index"/>
+<parameter id="Title"/>
+<parameter id="WindowHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="create_3d_window">
+<interface>
+<ic>
+<par name="Width" base_type="ctrl" dimension="0"/>
+<par name="Height" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Window3DHande" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>            dev_open_window (0, 2*Width, Width, Height, 'black', Window3DHande)</l>
+<l>            dev_set_window (Window3DHande)</l>
+<l>            dev_set_lut('default')</l>
+<l>return ()</l>
+</body>
+<docu id="create_3d_window">
+<parameters>
+<parameter id="Height"/>
+<parameter id="Width"/>
+<parameter id="Window3DHande"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
